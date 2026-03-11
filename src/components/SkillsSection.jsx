@@ -55,7 +55,7 @@ function RubiksCube({ onExplode }) {
       camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 200);
 
       // camera position. The bigger the number the farther the cube.
-      camera.position.set(0, 0, 22);
+      camera.position.set(0, 0, 16);
       camera.lookAt(0, 0, 0);
 
       scene.add(new THREE.AmbientLight(0xffffff, 0.5));
