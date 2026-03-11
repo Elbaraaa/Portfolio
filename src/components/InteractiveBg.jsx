@@ -19,16 +19,16 @@ export function InteractiveBg({ C, isDark }) {
     // Theme-aware color values
     const gridAlpha = isDark ? 0.018 : 0.08;
     const connAlpha = isDark ? 0.18 : 0.25;
-    const mouseAlpha = isDark ? 0.35 : 0.4;
-    const particleAlpha = isDark ? 0.7 : 0.9;
-    const rippleBase = isDark ? "124,111,255" : "91,79,217";
-    const glowAlpha1 = isDark ? 0.06 : 0.1;
-    const glowAlpha2 = isDark ? 0.025 : 0.06;
+    const mouseAlpha = isDark ? 0.35 : 0.3;
+    const particleAlpha = isDark ? 0.7 : 0.5;
+    const rippleBase = isDark ? "124,111,255" : "160,160,160";
+    const glowAlpha1 = isDark ? 0.06 : 0.06;
+    const glowAlpha2 = isDark ? 0.025 : 0.03;
 
     const N = 90;
     const cols = isDark
       ? [`rgba(124,111,255,`,`rgba(74,255,196,`,`rgba(249,127,255,`]
-      : [`rgba(91,79,217,`,`rgba(14,158,114,`,`rgba(176,38,204,`];
+      : [`rgba(140,140,140,`,`rgba(180,180,180,`,`rgba(120,120,120,`];
     const pts = Array.from({ length: N }, () => ({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, r: 1.2+Math.random()*1.8, col: cols[Math.floor(Math.random()*3)], base: { x: 0, y: 0 } }));
     pts.forEach(p => { p.base.x = p.x; p.base.y = p.y; });
     function draw() {
@@ -59,7 +59,7 @@ export function InteractiveBg({ C, isDark }) {
         for (let k = 0; k < 3; k++) { const rr = rp.r-k*18; if (rr > 0) { ctx.beginPath(); ctx.arc(rp.x,rp.y,rr,0,Math.PI*2); ctx.strokeStyle = `rgba(${rippleBase},${rp.alpha*(1-k*0.3)})`; ctx.lineWidth = 1.5-k*0.4; ctx.stroke(); } }
       });
       const grad = ctx.createRadialGradient(mx,my,0,mx,my,140);
-      grad.addColorStop(0,`rgba(${rippleBase},${glowAlpha1})`); grad.addColorStop(0.5,`rgba(${isDark?"74,255,196":"14,158,114"},${glowAlpha2})`); grad.addColorStop(1,"transparent");
+      grad.addColorStop(0,`rgba(${rippleBase},${glowAlpha1})`); grad.addColorStop(0.5,`rgba(${isDark?"74,255,196":"190,190,190"},${glowAlpha2})`); grad.addColorStop(1,"transparent");
       ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(mx,my,140,0,Math.PI*2); ctx.fill();
       raf = requestAnimationFrame(draw);
     }

@@ -5,9 +5,9 @@ export const DARK = {
 };
 
 export const LIGHT = {
-  bg: "#F5F5F7", surface: "#FFFFFF", panel: "#FFFFFF", border: "#D1D5DB",
-  accent: "#4338CA", green: "#059669", pink: "#C026D3", orange: "#D97706",
-  textPrimary: "#111827", textSecondary: "#4B5563", textDim: "#9CA3AF",
+  bg: "#F2F2F2", surface: "#FFFFFF", panel: "#FAFAFA", border: "#D4D4D4",
+  accent: "#404040", green: "#525252", pink: "#737373", orange: "#595959",
+  textPrimary: "#171717", textSecondary: "#525252", textDim: "#A3A3A3",
 };
 
 export const mkPanel = (C, extra) =>

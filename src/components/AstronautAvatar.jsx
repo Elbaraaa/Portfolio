@@ -86,7 +86,7 @@ export function AstronautAvatar({ C, isDark }) {
               {/* Light mode astronaut — white suit, dark visor, warm accents */}
               <ellipse cx="27" cy="22" rx="16" ry="17" fill="#EAECF0" stroke="#9CA3AF" strokeWidth="1.2"/>
               <ellipse cx="27" cy="22" rx="11" ry="12" fill="#1F2937" opacity="0.85"/>
-              <ellipse cx="30" cy="20" rx="6" ry="7" fill="#60A5FA" opacity="0.2"/>
+              <ellipse cx="30" cy="20" rx="6" ry="7" fill="#A3A3A3" opacity="0.15"/>
               <circle cx="23" cy="22" r="2.2" fill="#111827" opacity="0.9"/>
               <circle cx="31" cy="22" r="2.2" fill="#111827" opacity="0.9"/>
               <path d="M23 27 Q27 30 31 27" stroke="#111827" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
