@@ -19,20 +19,21 @@ export function useInView(t = 0.12) {
 
 export function useSectionSnap() {
   const [current, setCurrent] = useState(0);
-  const isAnimating = useRef(false);
-  const accDelta = useRef(0);
-  const THRESHOLD = 80;
+  const snapTimer = useRef(null);
+  const isSnapping = useRef(false);
 
   const goTo = useCallback((idx) => {
     const clamped = Math.max(0, Math.min(SECTIONS.length - 1, idx));
     const el = document.getElementById(SECTIONS[clamped]);
     if (!el) return;
-    isAnimating.current = true;
+    isSnapping.current = true;
     setCurrent(clamped);
     el.scrollIntoView({ behavior: "smooth" });
-    setTimeout(() => { isAnimating.current = false; accDelta.current = 0; }, 900);
+    // Lock out auto-snap while programmatic scroll is happening
+    setTimeout(() => { isSnapping.current = false; }, 1000);
   }, []);
 
+  // Track which section is most visible
   useEffect(() => {
     const observers = SECTIONS.map((id, i) => {
       const el = document.getElementById(id);
@@ -47,28 +48,52 @@ export function useSectionSnap() {
     return () => observers.forEach((o) => o && o.disconnect());
   }, []);
 
+  // Debounced snap: after user stops scrolling for 800ms,
+  // find the nearest section and gently scroll to it —
+  // but only if they're within 30% of viewport from a section top
+  useEffect(() => {
+    const onScroll = () => {
+      if (isSnapping.current) return;
+      clearTimeout(snapTimer.current);
+      snapTimer.current = setTimeout(() => {
+        if (isSnapping.current) return;
+        const vh = window.innerHeight;
+        const scrollY = window.scrollY;
+
+        // Find the section whose top is closest to the current scroll position
+        let closest = null;
+        let closestDist = Infinity;
+        for (const id of SECTIONS) {
+          const el = document.getElementById(id);
+          if (!el) continue;
+          const top = el.offsetTop;
+          const dist = Math.abs(scrollY - top);
+          if (dist < closestDist) {
+            closestDist = dist;
+            closest = el;
+          }
+        }
+
+        // Only snap if we're within 30% of viewport height from a section edge
+        // This means if you're mid-section reading content, it leaves you alone
+        if (closest && closestDist < vh * 0.3 && closestDist > 10) {
+          isSnapping.current = true;
+          closest.scrollIntoView({ behavior: "smooth" });
+          setTimeout(() => { isSnapping.current = false; }, 1000);
+        }
+      }, 800);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(snapTimer.current);
+    };
+  }, []);
+
   const isArcadePlaying = () => !!document.querySelector('[data-arcade-playing="true"]');
 
-  useEffect(() => {
-    const onWheel = (e) => {
-      if (isArcadePlaying()) return;
-      e.preventDefault();
-      if (isAnimating.current) return;
-      accDelta.current += e.deltaY;
-      if (Math.abs(accDelta.current) >= THRESHOLD) {
-        const dir = accDelta.current > 0 ? 1 : -1;
-        accDelta.current = 0;
-        setCurrent((c) => {
-          const next = Math.max(0, Math.min(SECTIONS.length - 1, c + dir));
-          goTo(next);
-          return next;
-        });
-      }
-    };
-    window.addEventListener("wheel", onWheel, { passive: false });
-    return () => window.removeEventListener("wheel", onWheel);
-  }, [goTo]);
-
+  // Keyboard navigation
   useEffect(() => {
     const onKey = (e) => {
       if (isArcadePlaying()) return;
