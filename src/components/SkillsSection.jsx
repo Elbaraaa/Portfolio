@@ -221,7 +221,7 @@ function RubiksCube({ onExplode }) {
   return (
     <div ref={mountRef} onMouseDown={startHold} onMouseUp={endHold} onMouseLeave={endHold}
       onTouchStart={startHold} onTouchEnd={endHold}
-      style={{ position:"fixed", inset:0, zIndex:998, cursor:"none", userSelect:"none", WebkitUserSelect:"none" }}
+      style={{ position:"absolute", inset:0, zIndex:998, cursor:"none", userSelect:"none", WebkitUserSelect:"none" }}
       data-cube-overlay="true"
     />
   );
@@ -308,8 +308,8 @@ export function SkillsSection({ C }) {
           opacity:   (!isMobile && showCube && phase === "idle") ? 1 : 0,
           transition: "max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 320, fontFamily: "monospace", fontSize: 12, color: C.textDim, justifyContent: "center", paddingBottom: 8 }}>
-            <span style={{ color: C.accent, animation: "cubePulse 1.8s ease-in-out infinite" }}>◆</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 320, fontFamily: "monospace", fontSize: 15, color: C.textSecondary, justifyContent: "center", paddingBottom: 8, textShadow: `0 0 20px ${C.bg}, 0 0 40px ${C.bg}` }}>
+            <span style={{ color: C.accent, animation: "cubePulse 1.8s ease-in-out infinite", fontSize: 18 }}>◆</span>
             Hold the cube to charge it up, release to reveal skills
           </div>
         </div>
