@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export function CustomCursor({ C }) {
+export function CustomCursor({ C, isDark }) {
   const dotRef=useRef(null), ringRef=useRef(null), trailsRef=useRef([]);
   const clickLabelRef=useRef(null), grabLabelRef=useRef(null);
   const pos=useRef({x:-200,y:-200}), ring=useRef({x:-200,y:-200});
@@ -67,9 +67,9 @@ export function CustomCursor({ C }) {
 
   return (
     <>
-      <div ref={dotRef} style={{position:"fixed",top:0,left:0,width:8,height:8,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},${C.green})`,pointerEvents:"none",zIndex:9999,willChange:"transform",mixBlendMode:"screen"}}/>
-      <div ref={ringRef} style={{position:"fixed",top:0,left:0,width:32,height:32,borderRadius:"50%",border:`1.5px solid ${C.accent}`,pointerEvents:"none",zIndex:9998,transition:"width 0.18s,height 0.18s,border-color 0.18s,opacity 0.18s",willChange:"transform",mixBlendMode:"screen"}}/>
-      {Array(8).fill(null).map((_,i)=><div key={i} ref={el=>trailsRef.current[i]=el} style={{position:"fixed",top:0,left:0,width:3,height:3,borderRadius:"50%",background:C.accent,pointerEvents:"none",zIndex:9997,willChange:"transform",mixBlendMode:"screen"}}/>)}
+      <div ref={dotRef} style={{position:"fixed",top:0,left:0,width:8,height:8,borderRadius:"50%",background:isDark?`linear-gradient(135deg,${C.accent},${C.green})`:"#111827",pointerEvents:"none",zIndex:9999,willChange:"transform"}}/>
+      <div ref={ringRef} style={{position:"fixed",top:0,left:0,width:32,height:32,borderRadius:"50%",border:`1.5px solid ${isDark?C.accent:"#374151"}`,pointerEvents:"none",zIndex:9998,transition:"width 0.18s,height 0.18s,border-color 0.18s,opacity 0.18s",willChange:"transform"}}/>
+      {Array(8).fill(null).map((_,i)=><div key={i} ref={el=>trailsRef.current[i]=el} style={{position:"fixed",top:0,left:0,width:3,height:3,borderRadius:"50%",background:isDark?C.accent:"#374151",pointerEvents:"none",zIndex:9997,willChange:"transform"}}/>)}
       <div ref={clickLabelRef} style={{position:"fixed",top:0,left:0,pointerEvents:"none",zIndex:10000,willChange:"transform",opacity:0,transition:"opacity 0.15s, transform 0.15s"}}>
         <div style={{background:`linear-gradient(135deg,${C.accent}CC,${C.green}CC)`,backdropFilter:"blur(6px)",border:`1px solid ${C.accent}60`,borderRadius:6,padding:"3px 8px",fontFamily:"monospace",fontSize:10,fontWeight:700,color:"#fff",letterSpacing:"0.08em",whiteSpace:"nowrap",boxShadow:`0 0 12px ${C.accent}40`}}>
           CLICK

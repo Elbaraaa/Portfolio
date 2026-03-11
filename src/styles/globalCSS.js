@@ -8,8 +8,8 @@ export const globalCSS = `
   @keyframes tileAppear{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
   *{box-sizing:border-box;margin:0;padding:0;cursor:none !important}
   html{scroll-snap-type:y mandatory;overflow-y:scroll;scroll-behavior:smooth}
-  section{scroll-snap-align:start}
-  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#070B14}::-webkit-scrollbar-thumb{background:#1E2D4A;border-radius:2px}
+  section{}
+  ::-webkit-scrollbar{width:4px}
   ::selection{background:rgba(124,111,255,0.25)}
-  input,textarea{color-scheme:dark}
+  .grad-text{-webkit-background-clip:text !important;background-clip:text !important;-webkit-text-fill-color:transparent !important;color:transparent !important}
 `;

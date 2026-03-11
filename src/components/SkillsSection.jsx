@@ -53,8 +53,6 @@ function RubiksCube({ onExplode }) {
 
       scene  = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 200);
-
-      // camera position. The bigger the number the farther the cube.
       camera.position.set(0, 0, 16);
       camera.lookAt(0, 0, 0);
 
@@ -229,18 +227,18 @@ function RubiksCube({ onExplode }) {
 
 function SkillCard({ cat, visible, delay, C }) {
   return (
-    <div style={{ ...mkPanel(C, { padding: 20 }), opacity: visible ? 1 : 0, transform: visible ? "scale(1) translateY(0)" : "scale(0.6) translateY(30px)", transition: `opacity 0.5s ${delay}s, transform 0.5s ${delay}s cubic-bezier(0.34,1.56,0.64,1)`, borderColor: visible ? cat.accent + "50" : C.border }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 10, height: 10, borderRadius: "50%", background: cat.accent, boxShadow: `0 0 8px ${cat.accent}` }} />
-        <span style={{ fontFamily: "monospace", fontSize: 11, color: cat.accent, textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700 }}>{cat.category}</span>
+    <div style={{ ...mkPanel(C, { padding: 16 }), opacity: visible ? 1 : 0, transform: visible ? "scale(1) translateY(0)" : "scale(0.6) translateY(30px)", transition: `opacity 0.5s ${delay}s, transform 0.5s ${delay}s cubic-bezier(0.34,1.56,0.64,1)`, borderColor: visible ? cat.accent + "50" : C.border }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+        <div style={{ width: 9, height: 9, borderRadius: "50%", background: cat.accent, boxShadow: `0 0 7px ${cat.accent}` }} />
+        <span style={{ fontFamily: "monospace", fontSize: 10, color: cat.accent, textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700 }}>{cat.category}</span>
       </div>
       {cat.items.map((skill, i) => (
-        <div key={skill.name} style={{ marginBottom: i < cat.items.length - 1 ? 10 : 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-            <span style={{ fontFamily: "system-ui", fontSize: 12, fontWeight: 600, color: C.textPrimary }}>{skill.name}</span>
-            <span style={{ fontFamily: "monospace", fontSize: 11, color: cat.accent, fontWeight: 700 }}>{skill.level}%</span>
+        <div key={skill.name} style={{ marginBottom: i < cat.items.length - 1 ? 6 : 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+            <span style={{ fontFamily: "system-ui", fontSize: 11, fontWeight: 600, color: C.textPrimary }}>{skill.name}</span>
+            <span style={{ fontFamily: "monospace", fontSize: 10, color: cat.accent, fontWeight: 700 }}>{skill.level}%</span>
           </div>
-          <div style={{ height: 4, background: C.border, borderRadius: 2, overflow: "hidden" }}>
+          <div style={{ height: 3, background: C.border, borderRadius: 2, overflow: "hidden" }}>
             <div style={{ height: "100%", width: visible ? skill.level + "%" : "0%", background: `linear-gradient(90deg,${cat.accent},${cat.accent}80)`, borderRadius: 2, boxShadow: `0 0 6px ${cat.accent}50`, transition: `width 0.9s ${delay + 0.2 + i * 0.05}s cubic-bezier(0.4,0,0.2,1)` }} />
           </div>
         </div>
@@ -258,6 +256,8 @@ export function SkillsSection({ C }) {
   const [bgActive, setBgActive]         = useState(false);
   const [headingAnim, setHeadingAnim]   = useState("");
 
+  const gridRef = useRef(null);
+
   useEffect(() => { const check = () => setIsMobile(window.innerWidth < 700); check(); window.addEventListener("resize", check); return () => window.removeEventListener("resize", check); }, []);
 
   const handleExplode = useCallback(() => {
@@ -274,8 +274,47 @@ export function SkillsSection({ C }) {
     setTimeout(() => { setPhase("idle"); setShowCube(true); }, 600);
   }, []);
 
+  // Collapse on scroll when grid is showing
+  useEffect(() => {
+    if (phase !== "grid" || !cardsVisible) return;
+    let scrollStart = window.scrollY;
+    let settled = false;
+
+    // Wait a moment for the explode animation to settle before listening
+    const settleTimer = setTimeout(() => { scrollStart = window.scrollY; settled = true; }, 1000);
+
+    const onScroll = () => {
+      if (!settled) return;
+      const delta = Math.abs(window.scrollY - scrollStart);
+      if (delta > 60) {
+        handleCollapse();
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); clearTimeout(settleTimer); };
+  }, [phase, cardsVisible, handleCollapse]);
+
+  // Collapse on click outside the skill cards
+  useEffect(() => {
+    if (phase !== "grid" || !cardsVisible) return;
+
+    const onClick = (e) => {
+      if (gridRef.current && !gridRef.current.contains(e.target)) {
+        handleCollapse();
+      }
+    };
+
+    // Delay adding listener so the explode click doesn't immediately trigger it
+    const timer = setTimeout(() => {
+      window.addEventListener("click", onClick);
+    }, 800);
+
+    return () => { clearTimeout(timer); window.removeEventListener("click", onClick); };
+  }, [phase, cardsVisible, handleCollapse]);
+
   return (
-    <section id="skills" ref={ref} style={{ padding: "96px 60px", background: "transparent", minHeight: "100vh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
+    <section id="skills" ref={ref} style={{ padding: "96px 60px", background: "transparent", minHeight: "100vh", display: "flex", alignItems: phase === "grid" ? "flex-start" : "center", paddingTop: phase === "grid" ? 96 : undefined, position: "relative" }}>
       <div style={{
         position: "fixed", left: "50%", top: "50%",
         width: "100vmax", height: "100vmax", borderRadius: "50%",
@@ -295,7 +334,7 @@ export function SkillsSection({ C }) {
         </div>
         <h2 style={{
           fontFamily: "system-ui", fontSize: "clamp(28px,4vw,46px)", fontWeight: 800,
-          letterSpacing: "-0.02em", margin: "0 0 36px", color: C.textPrimary,
+          letterSpacing: "-0.02em", margin: "0 0 20px", color: C.textPrimary,
           animation: headingAnim === "up"   ? "headingUp 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards"
                    : headingAnim === "down" ? "headingDown 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards"
                    : "none",
@@ -318,15 +357,15 @@ export function SkillsSection({ C }) {
             {skillCategories.map((cat, i) => <SkillCard key={cat.category} cat={cat} visible delay={i * 0.1} C={C}/>)}
           </div>
         )}
-        <div style={{
+        <div ref={gridRef} style={{
           overflow: "hidden",
-          maxHeight: (!isMobile && phase === "grid") ? "1000px" : "0px",
+          maxHeight: (!isMobile && phase === "grid") ? "none" : "0px",
           opacity:   (!isMobile && phase === "grid") ? 1 : 0,
           transform: (!isMobile && phase === "grid") ? "translateY(0)" : "translateY(40px)",
           transition: "max-height 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.5s ease, transform 0.5s ease",
           pointerEvents: phase === "grid" ? "auto" : "none",
         }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
             {skillCategories.map((cat, i) => <SkillCard key={cat.category} cat={cat} visible={cardsVisible} delay={i * 0.1} C={C}/>)}
           </div>
           <div style={{ display: "flex", justifyContent: "center" }}>

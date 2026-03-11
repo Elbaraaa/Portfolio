@@ -52,10 +52,15 @@ export default function Portfolio() {
   return (
     <div style={{ background: C.bg, color: C.textPrimary, fontFamily: "system-ui,-apple-system,sans-serif", cursor: "none", transition: "background 0.4s, color 0.4s" }}>
       <style>{globalCSS}</style>
+      <style>{`
+        ::-webkit-scrollbar-track{background:${C.bg}}
+        ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}
+        input,textarea{color-scheme:${darkMode ? "dark" : "light"}}
+      `}</style>
 
-      <InteractiveBg C={C} />
-      <CustomCursor C={C} />
-      <AstronautAvatar C={C} />
+      <InteractiveBg C={C} isDark={darkMode} />
+      <CustomCursor C={C} isDark={darkMode} />
+      <AstronautAvatar C={C} isDark={darkMode} />
       <SectionDots current={current} goTo={goTo} C={C} />
       <NavBar onMenu={() => setMenuOpen(true)} onTerminal={() => setTerminal(true)} C={C} darkMode={darkMode} toggleDark={() => setDarkMode((d) => !d)} />
       <MenuOverlay open={menuOpen} onClose={() => setMenuOpen(false)} goTo={goTo} C={C} />

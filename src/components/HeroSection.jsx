@@ -27,8 +27,8 @@ export function HeroSection({ onMenu, onHire, C }) {
           <span style={{fontSize:8,color:C.accent}}>◆</span>{personal.location}<span style={{color:C.border}}>·</span><span style={{color:C.green}}>●</span> Available
         </div>
         <h1 style={{fontFamily:"system-ui,-apple-system",fontWeight:800,lineHeight:0.92,margin:"0 0 20px",letterSpacing:"-0.03em",animation:"fadeUp 0.7s 0.4s both"}}>
-          <span style={{display:"block",fontSize:"clamp(48px,7vw,82px)",background:`linear-gradient(135deg,${C.textPrimary},${C.accent})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Elbaraa</span>
-          <span style={{display:"block",fontSize:"clamp(48px,7vw,82px)",background:`linear-gradient(135deg,${C.accent},${C.green})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Abdalla.</span>
+          <span className="grad-text" style={{display:"block",fontSize:"clamp(48px,7vw,82px)",background:`linear-gradient(135deg,${C.textPrimary},${C.accent})`}}>Elbaraa</span>
+          <span className="grad-text" style={{display:"block",fontSize:"clamp(48px,7vw,82px)",background:`linear-gradient(135deg,${C.accent},${C.green})`}}>Abdalla.</span>
         </h1>
         <div style={{fontFamily:"monospace",fontSize:14,color:C.accent,marginBottom:18,minHeight:22,animation:"fadeUp 0.5s 0.9s both"}}><Typewriter text={`> ${personal.subTagline}`} delay={1000}/></div>
         <p style={{color:C.textSecondary,fontSize:15,lineHeight:1.75,maxWidth:500,marginBottom:32,animation:"fadeUp 0.6s 1.1s both"}}>I build systems that close the gap between research and real-world impact.</p>
@@ -43,7 +43,7 @@ export function HeroSection({ onMenu, onHire, C }) {
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden",animation:"fadeUp 0.6s 1.5s both",maxWidth:520}}>
           {stats.map((s,i)=>(
             <div key={i} style={{padding:"14px 18px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none"}}>
-              <div style={{fontFamily:"system-ui",fontSize:22,fontWeight:800,background:`linear-gradient(135deg,${C.textPrimary},${C.accent})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:3}}>{s.value}</div>
+              <div className="grad-text" style={{fontFamily:"system-ui",fontSize:22,fontWeight:800,background:`linear-gradient(135deg,${C.textPrimary},${C.accent})`,marginBottom:3}}>{s.value}</div>
               <div style={{fontFamily:"monospace",fontSize:8,color:C.textDim,textTransform:"uppercase",letterSpacing:"0.08em",lineHeight:1.3}}>{s.label}</div>
             </div>
           ))}

@@ -14,7 +14,7 @@ export function ContactSection({ C }) {
       <div style={{maxWidth:680,margin:"0 auto",position:"relative",zIndex:1,width:"100%"}}>
         <div style={{opacity:inView?1:0,transform:inView?"none":"translateY(20px)",transition:"all 0.6s"}}><SectionTag num="09" label="Contact" C={C}/></div>
         <h2 style={{fontFamily:"system-ui",fontSize:"clamp(32px,5vw,56px)",fontWeight:800,letterSpacing:"-0.02em",margin:"0 0 16px",opacity:inView?1:0,transition:"all 0.6s 0.1s"}}>
-          Let's build<br/><span style={{background:`linear-gradient(90deg,${C.accent},${C.green})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>something real.</span>
+          Let's build<br/><span className="grad-text" style={{background:`linear-gradient(90deg,${C.accent},${C.green})`}}>something real.</span>
         </h2>
         <p style={{color:C.textSecondary,fontSize:16,lineHeight:1.75,maxWidth:480,marginBottom:36,opacity:inView?1:0,transition:"all 0.6s 0.2s"}}>Seeking Summer 2026 internships in software engineering, full-stack dev, and applied AI.</p>
         <div style={{display:"flex",flexDirection:"column",gap:10,opacity:inView?1:0,transition:"all 0.6s 0.3s"}}>

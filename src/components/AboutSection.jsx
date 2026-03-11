@@ -15,7 +15,7 @@ export function AboutSection({ C }) {
             <h2 style={{fontFamily:"system-ui",fontSize:"clamp(26px,3.5vw,42px)",fontWeight:800,lineHeight:1.2,margin:"0 0 24px",letterSpacing:"-0.02em"}}>
               <span style={{color:C.textPrimary}}>I don't just write code.</span><br/>
               <span style={{color:C.textDim}}>I build infrastructure</span><br/>
-              <span style={{background:`linear-gradient(90deg,${C.accent},${C.green})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>for real problems.</span>
+              <span className="grad-text" style={{background:`linear-gradient(90deg,${C.accent},${C.green})`}}>for real problems.</span>
             </h2>
             {personal.bio.split("\n\n").map((p,i)=><p key={i} style={{color:C.textSecondary,lineHeight:1.8,marginBottom:14,fontSize:14}}>{p}</p>)}
             <div style={mkPanel(C,{padding:18,marginTop:20})}>
@@ -47,7 +47,7 @@ export function AboutSection({ C }) {
                   <div style={{fontSize:12,color:C.textSecondary,marginTop:3}}>Expected May 2026 · Dean's List</div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontFamily:"system-ui",fontSize:32,fontWeight:800,background:`linear-gradient(135deg,${C.accent},${C.green})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>3.9</div>
+                  <div className="grad-text" style={{fontFamily:"system-ui",fontSize:32,fontWeight:800,background:`linear-gradient(135deg,${C.accent},${C.green})`}}>3.9</div>
                   <div style={{fontFamily:"monospace",fontSize:10,color:C.textDim}}>GPA</div>
                 </div>
               </div>

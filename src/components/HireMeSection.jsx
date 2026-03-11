@@ -23,7 +23,7 @@ export function HireMeSection({ C }) {
           <SectionTag num="08" label="Hire Me" C={C}/>
           <h2 style={{fontFamily:"system-ui",fontSize:"clamp(28px,4vw,48px)",fontWeight:800,letterSpacing:"-0.02em",margin:"0 0 8px"}}>
             <span style={{color:C.textPrimary}}>Ready to </span>
-            <span style={{background:`linear-gradient(90deg,${C.accent},${C.green})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>make an impact.</span>
+            <span className="grad-text" style={{background:`linear-gradient(90deg,${C.accent},${C.green})`}}>make an impact.</span>
           </h2>
           <p style={{color:C.textSecondary,fontSize:15,lineHeight:1.75,maxWidth:520,marginBottom:40}}>Looking for Summer 2026 internships in software engineering, full-stack dev, and applied AI.</p>
         </div>

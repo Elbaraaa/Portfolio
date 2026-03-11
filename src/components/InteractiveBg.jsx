@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export function InteractiveBg({ C }) {
+export function InteractiveBg({ C, isDark }) {
   const canvasRef = useRef(null);
   const mouse = useRef({ x: -1000, y: -1000 });
   const ripples = useRef([]);
@@ -15,12 +15,25 @@ export function InteractiveBg({ C }) {
     const onClick = e => { ripples.current.push({ x: e.clientX, y: e.clientY, r: 0, alpha: 0.6 }); };
     window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("click", onClick);
+
+    // Theme-aware color values
+    const gridAlpha = isDark ? 0.018 : 0.08;
+    const connAlpha = isDark ? 0.18 : 0.25;
+    const mouseAlpha = isDark ? 0.35 : 0.4;
+    const particleAlpha = isDark ? 0.7 : 0.9;
+    const rippleBase = isDark ? "124,111,255" : "91,79,217";
+    const glowAlpha1 = isDark ? 0.06 : 0.1;
+    const glowAlpha2 = isDark ? 0.025 : 0.06;
+
     const N = 90;
-    const pts = Array.from({ length: N }, () => ({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, r: 1.2+Math.random()*1.8, col: [`rgba(124,111,255,`,`rgba(74,255,196,`,`rgba(249,127,255,`][Math.floor(Math.random()*3)], base: { x: 0, y: 0 } }));
+    const cols = isDark
+      ? [`rgba(124,111,255,`,`rgba(74,255,196,`,`rgba(249,127,255,`]
+      : [`rgba(91,79,217,`,`rgba(14,158,114,`,`rgba(176,38,204,`];
+    const pts = Array.from({ length: N }, () => ({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, r: 1.2+Math.random()*1.8, col: cols[Math.floor(Math.random()*3)], base: { x: 0, y: 0 } }));
     pts.forEach(p => { p.base.x = p.x; p.base.y = p.y; });
     function draw() {
       ctx.clearRect(0, 0, W, H);
-      ctx.strokeStyle = "rgba(124,111,255,0.018)"; ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(${rippleBase},${gridAlpha})`; ctx.lineWidth = 1;
       for (let x = 0; x <= W; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
       for (let y = 0; y <= H; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
       const mx = mouse.current.x, my = mouse.current.y;
@@ -33,25 +46,25 @@ export function InteractiveBg({ C }) {
       });
       for (let i = 0; i < N; i++) for (let j = i+1; j < N; j++) {
         const dx = pts[i].x-pts[j].x, dy = pts[i].y-pts[j].y, d = Math.sqrt(dx*dx+dy*dy);
-        if (d < 110) { ctx.strokeStyle = `rgba(124,111,255,${(1-d/110)*0.18})`; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.stroke(); }
+        if (d < 110) { ctx.strokeStyle = `rgba(${rippleBase},${(1-d/110)*connAlpha})`; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.stroke(); }
       }
       pts.forEach(p => {
         const dx = p.x-mx, dy = p.y-my, d = Math.sqrt(dx*dx+dy*dy);
-        if (d < 160) { ctx.strokeStyle = `rgba(124,111,255,${(1-d/160)*0.35})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(p.x,p.y); ctx.stroke(); }
+        if (d < 160) { ctx.strokeStyle = `rgba(${rippleBase},${(1-d/160)*mouseAlpha})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(p.x,p.y); ctx.stroke(); }
       });
-      pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle = p.col+"0.7)"; ctx.fill(); });
+      pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle = p.col+`${particleAlpha})`; ctx.fill(); });
       ripples.current = ripples.current.filter(rp => rp.alpha > 0.01);
       ripples.current.forEach(rp => {
         rp.r += 4; rp.alpha *= 0.93;
-        for (let k = 0; k < 3; k++) { const rr = rp.r-k*18; if (rr > 0) { ctx.beginPath(); ctx.arc(rp.x,rp.y,rr,0,Math.PI*2); ctx.strokeStyle = `rgba(124,111,255,${rp.alpha*(1-k*0.3)})`; ctx.lineWidth = 1.5-k*0.4; ctx.stroke(); } }
+        for (let k = 0; k < 3; k++) { const rr = rp.r-k*18; if (rr > 0) { ctx.beginPath(); ctx.arc(rp.x,rp.y,rr,0,Math.PI*2); ctx.strokeStyle = `rgba(${rippleBase},${rp.alpha*(1-k*0.3)})`; ctx.lineWidth = 1.5-k*0.4; ctx.stroke(); } }
       });
       const grad = ctx.createRadialGradient(mx,my,0,mx,my,140);
-      grad.addColorStop(0,"rgba(124,111,255,0.06)"); grad.addColorStop(0.5,"rgba(74,255,196,0.025)"); grad.addColorStop(1,"transparent");
+      grad.addColorStop(0,`rgba(${rippleBase},${glowAlpha1})`); grad.addColorStop(0.5,`rgba(${isDark?"74,255,196":"14,158,114"},${glowAlpha2})`); grad.addColorStop(1,"transparent");
       ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(mx,my,140,0,Math.PI*2); ctx.fill();
       raf = requestAnimationFrame(draw);
     }
     draw();
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize",resize); window.removeEventListener("mousemove",onMove); window.removeEventListener("click",onClick); };
-  }, []);
-  return <canvas ref={canvasRef} style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, opacity:0.85 }} />;
+  }, [isDark]);
+  return <canvas ref={canvasRef} style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, opacity: isDark ? 0.85 : 0.65 }} />;
 }

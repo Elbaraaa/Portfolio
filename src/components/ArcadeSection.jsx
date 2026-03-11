@@ -61,7 +61,7 @@ export function ArcadeSection({ C }) {
       <div style={{maxWidth:1080,margin:"0 auto",width:"100%"}}>
         <div style={{opacity:inView?1:0,transform:inView?"none":"translateY(20px)",transition:"all 0.6s"}}>
           <SectionTag num="06" label="Arcade" C={C}/>
-          <h2 style={{fontFamily:"system-ui",fontSize:"clamp(28px,4vw,46px)",fontWeight:800,letterSpacing:"-0.02em",margin:"0 0 8px",color:C.textPrimary}}>Need a <span style={{background:`linear-gradient(90deg,${C.pink},${C.orange})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>break?</span></h2>
+          <h2 style={{fontFamily:"system-ui",fontSize:"clamp(28px,4vw,46px)",fontWeight:800,letterSpacing:"-0.02em",margin:"0 0 8px",color:C.textPrimary}}>Need a <span className="grad-text" style={{background:`linear-gradient(90deg,${C.pink},${C.orange})`}}>break?</span></h2>
           <p style={{color:C.textSecondary,fontSize:14,marginBottom:36}}>Even builders need to play. Pick a game and take five.</p>
         </div>
         <div style={{display:"grid",gridTemplateColumns:playing?"1fr 1fr":"1fr 1fr 1fr",gap:16,transition:"all 0.4s"}}>
