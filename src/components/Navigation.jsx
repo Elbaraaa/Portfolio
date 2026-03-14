@@ -4,7 +4,7 @@ import { SECTIONS } from "../data/content";
 
 export function SectionDots({ current, goTo, C }) {
   return (
-    <div style={{position:"fixed",right:20,top:"50%",transform:"translateY(-50%)",zIndex:300,display:"flex",flexDirection:"column",gap:10}}>
+    <div style={{position:"fixed",right:20,top:"50%",transform:"translateY(-50%)",zIndex:300,display: window.innerWidth <= 767 ? "none" : "flex",flexDirection:"column",gap:10}}>
       {SECTIONS.map((id,i)=>(
         <button key={id} onClick={()=>goTo(i)} style={{width:i===current?22:7,height:7,borderRadius:4,border:"none",cursor:"pointer",background:i===current?`linear-gradient(90deg,${C.accent},${C.green})`:C.border,transition:"all 0.3s",padding:0}}/>
       ))}
@@ -18,7 +18,7 @@ export function MenuOverlay({ open, onClose, goTo, C }) {
     <div style={{position:"fixed",inset:0,zIndex:600,pointerEvents:open?"all":"none"}} onClick={onClose}>
       <div style={{position:"absolute",inset:0,background:"rgba(7,11,20,0.97)",backdropFilter:"blur(20px)",opacity:open?1:0,transition:"opacity 0.4s"}}/>
       <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:"50%",left:"50%",transform:open?"translate(-50%,-50%) scale(1)":"translate(-50%,-50%) scale(0.96)",opacity:open?1:0,transition:"all 0.4s cubic-bezier(0.4,0,0.2,1)",pointerEvents:open?"all":"none",width:"100%",maxWidth:760,padding:"0 32px"}}>
-        <div style={{maxWidth:720,width:"100%",padding:"0 32px"}}>
+        <div style={{maxWidth:720,width:"100%",padding:0}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:40}}>
             <div>
               <div style={{fontFamily:"monospace",fontSize:10,color:C.accent,letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:6}}>Navigation</div>
@@ -26,7 +26,7 @@ export function MenuOverlay({ open, onClose, goTo, C }) {
             </div>
             <button onClick={onClose} style={{width:44,height:44,borderRadius:"50%",border:`1px solid ${C.border}`,background:C.panel,color:C.textSecondary,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+          <div style={{display:"grid",gridTemplateColumns: window.innerWidth <= 600 ? "1fr 1fr" : "1fr 1fr 1fr",gap:10}}>
             {items.map((item,i)=>(
               <button key={item.label} onClick={()=>{goTo(item.idx);onClose();}}
                 style={{...mkPanel(C,{padding:"18px 20px",cursor:"pointer",textAlign:"left",transition:"all 0.25s"}),animation:open?`fadeUp 0.4s ${i*0.04}s both`:"none"}}
