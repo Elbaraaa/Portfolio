@@ -7,7 +7,7 @@ export function ContactSection({ C }) {
   const {ref,inView}=useInView(0.1);
   const links=[{icon:"✉️",label:"Email",value:personal.email,href:`mailto:${personal.email}`,accent:C.accent},{icon:"🐙",label:"GitHub",value:"github.com/baraaabdalla",href:personal.github,accent:C.pink},{icon:"💼",label:"LinkedIn",value:"linkedin.com/in/baraaabdalla",href:personal.linkedin,accent:C.green}];
   return (
-    <section id="contact" ref={ref} style={{padding:"96px 60px",background:"transparent",minHeight:"100vh",display:"flex",alignItems:"center",position:"relative",overflow:"hidden"}}>
+    <section id="contact" ref={ref} className="section-pad" style={{padding:"96px 60px",background:"transparent",minHeight:"100vh",display:"flex",alignItems:"center",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}>
         <span style={{fontFamily:"system-ui",fontWeight:800,fontSize:"18vw",color:C.textPrimary,opacity:0.012,userSelect:"none"}}>HELLO</span>
       </div>

@@ -314,7 +314,7 @@ export function SkillsSection({ C }) {
   }, [phase, cardsVisible, handleCollapse]);
 
   return (
-    <section id="skills" ref={ref} style={{ padding: "96px 60px", background: "transparent", minHeight: "100vh", display: "flex", alignItems: phase === "grid" ? "flex-start" : "center", paddingTop: phase === "grid" ? 96 : undefined, position: "relative" }}>
+    <section id="skills" ref={ref} className="section-pad" style={{ padding: "96px 60px", background: "transparent", minHeight: "100vh", display: "flex", alignItems: phase === "grid" ? "flex-start" : "center", paddingTop: phase === "grid" ? 96 : undefined, position: "relative" }}>
       <div style={{
         position: "fixed", left: "50%", top: "50%",
         width: "100vmax", height: "100vmax", borderRadius: "50%",

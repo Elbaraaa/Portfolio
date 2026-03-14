@@ -6,11 +6,17 @@ import { SectionTag } from "./ui";
 export function AboutSection({ C }) {
   const {ref,inView}=useInView(0.1);
   const anim=(d=0)=>({opacity:inView?1:0,transform:inView?"none":"translateY(20px)",transition:`all 0.6s ${d}s`});
+  const cardStyle = mkPanel(C, {
+    padding:18,
+    cursor:"default",
+    transition:"border-color 0.3s,box-shadow 0.3s",
+    boxShadow:`0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)`
+  });
   return (
-    <section id="about" ref={ref} style={{padding:"96px 60px",background:"transparent",minHeight:"100vh",display:"flex",alignItems:"center",position:"relative"}}>
+    <section id="about" ref={ref} className="section-pad" style={{padding:"96px 60px",background:"transparent",minHeight:"100vh",display:"flex",alignItems:"center",position:"relative"}}>
       <div style={{maxWidth:1080,margin:"0 auto",width:"100%"}}>
         <div style={anim(0)}><SectionTag num="01" label="About" C={C}/></div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start"}}>
+        <div className="about-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:52,alignItems:"start"}}>
           <div style={anim(0.1)}>
             <h2 style={{fontFamily:"system-ui",fontSize:"clamp(26px,3.5vw,42px)",fontWeight:800,lineHeight:1.2,margin:"0 0 24px",letterSpacing:"-0.02em"}}>
               <span style={{color:C.textPrimary}}>I don't just write code.</span><br/>
@@ -18,7 +24,7 @@ export function AboutSection({ C }) {
               <span className="grad-text" style={{background:`linear-gradient(90deg,${C.accent},${C.green})`}}>for real problems.</span>
             </h2>
             {personal.bio.split("\n\n").map((p,i)=><p key={i} style={{color:C.textSecondary,lineHeight:1.8,marginBottom:14,fontSize:14}}>{p}</p>)}
-            <div style={mkPanel(C,{padding:18,marginTop:20})}>
+            <div style={mkPanel(C,{padding:18,marginTop:20,boxShadow:`0 2px 16px rgba(0,0,0,0.35)`})}>
               <div style={{fontFamily:"monospace",fontSize:9,color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Currently</div>
               {[["🎓","Studying","B.S. CS, University of Arizona"],["💼","Working","Web Dev @ UA RII"],["📚","Teaching","Undergrad TA / CS Mentor"],["🔭","Building","DocuMind RAG System"]].map(row=>(
                 <div key={row[1]} style={{display:"flex",gap:10,marginBottom:8}}>
@@ -29,17 +35,17 @@ export function AboutSection({ C }) {
               ))}
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,...anim(0.2)}}>
+          <div className="about-skills-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,...anim(0.2)}}>
             {[{icon:"⌨️",label:"Engineer",desc:"Full-stack systems from DB to UI."},{icon:"🧠",label:"Researcher",desc:"Applied AI, RAG pipelines & knowledge systems."},{icon:"👥",label:"Educator",desc:"Helped 500+ students level up."},{icon:"🚀",label:"Builder",desc:"Real tools used by real people."}].map(p=>(
-              <div key={p.label} style={mkPanel(C,{padding:18,cursor:"default",transition:"border-color 0.3s,box-shadow 0.3s"})}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent+"40";e.currentTarget.style.boxShadow=`0 0 20px ${C.accent}10`;}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.boxShadow="none";}}>
+              <div key={p.label} style={cardStyle}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent+"40";e.currentTarget.style.boxShadow=`0 0 20px ${C.accent}20, 0 4px 20px rgba(0,0,0,0.4)`;}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.boxShadow=`0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)`;}}>
                 <div style={{fontSize:20,marginBottom:10}}>{p.icon}</div>
                 <div style={{fontFamily:"system-ui",fontWeight:700,fontSize:14,color:C.textPrimary,marginBottom:6}}>{p.label}</div>
                 <div style={{fontSize:12,color:C.textDim,lineHeight:1.6}}>{p.desc}</div>
               </div>
             ))}
-            <div style={mkPanel(C,{padding:18,gridColumn:"1/-1",borderColor:C.accent+"20"})}>
+            <div style={mkPanel(C,{padding:18,gridColumn:"1/-1",borderColor:C.accent+"20",boxShadow:`0 2px 16px rgba(0,0,0,0.35)`})}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
                   <div style={{fontFamily:"monospace",fontSize:10,color:C.textDim,textTransform:"uppercase",marginBottom:4}}>University of Arizona</div>

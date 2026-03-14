@@ -9,7 +9,7 @@ import { DARK, LIGHT } from "./styles/theme";
 import { globalCSS } from "./styles/globalCSS";
 
 // Hooks
-import { useSectionSnap } from "./hooks/useInView";
+import { useSectionSnap, useWindowWidth } from "./hooks/useInView";
 
 // Global chrome
 import { InteractiveBg } from "./components/InteractiveBg";
@@ -37,6 +37,7 @@ export default function Portfolio() {
   const { current, goTo } = useSectionSnap();
   const [darkMode, setDarkMode] = useState(true);
   const C = darkMode ? DARK : LIGHT;
+  const isMobile = useWindowWidth() <= 767;
 
   useEffect(() => {
     let buf = "";
@@ -59,7 +60,7 @@ export default function Portfolio() {
       `}</style>
 
       <InteractiveBg C={C} isDark={darkMode} />
-      <CustomCursor C={C} isDark={darkMode} />
+      {!isMobile && <CustomCursor C={C} isDark={darkMode} />}
       <AstronautAvatar C={C} isDark={darkMode} />
       <SectionDots current={current} goTo={goTo} C={C} />
       <NavBar onMenu={() => setMenuOpen(true)} onTerminal={() => setTerminal(true)} C={C} darkMode={darkMode} toggleDark={() => setDarkMode((d) => !d)} />

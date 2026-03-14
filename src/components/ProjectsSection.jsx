@@ -68,13 +68,13 @@ function ProjectOverlay({ project, onClose, C }) {
 export function ProjectsSection({ C }) {
   const {ref,inView}=useInView(0.05); const [sel,setSel]=useState(null);
   return (
-    <section id="projects" ref={ref} style={{padding:"96px 60px",background:"transparent",minHeight:"100vh",display:"flex",alignItems:"center",position:"relative"}}>
+    <section id="projects" ref={ref} className="section-pad" style={{padding:"96px 60px",background:"transparent",minHeight:"100vh",display:"flex",alignItems:"center",position:"relative"}}>
       <div style={{maxWidth:1080,margin:"0 auto",width:"100%"}}>
         <div style={{opacity:inView?1:0,transform:inView?"none":"translateY(20px)",transition:"all 0.6s"}}>
           <SectionTag num="02" label="Projects" C={C}/>
           <h2 style={{fontFamily:"system-ui",fontSize:"clamp(28px,4vw,46px)",fontWeight:800,letterSpacing:"-0.02em",margin:"0 0 36px",color:C.textPrimary}}>Things I've <span style={{color:C.textDim}}>shipped.</span></h2>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}} className="projects-grid">
           {projects.map(p=><ProjectCard key={p.id} project={p} onClick={()=>setSel(p)} C={C}/>)}
         </div>
       </div>

@@ -25,14 +25,14 @@ export function GuestbookSection({ C }) {
     setSigs(p=>[entry,...p]);setName("");setMsg("");setTypedSig("");clearCanvas();setSubmitting(false);setDone(true);setTimeout(()=>setDone(false),3000);
   };
   return (
-    <section id="guestbook" ref={ref} style={{padding:"80px 60px",background:"transparent",minHeight:"100vh",display:"flex",alignItems:"center",position:"relative"}}>
+    <section id="guestbook" ref={ref} className="section-pad" style={{padding:"80px 60px",background:"transparent",minHeight:"100vh",display:"flex",alignItems:"center",position:"relative"}}>
       <div style={{maxWidth:1080,margin:"0 auto",width:"100%"}}>
         <div style={{opacity:inView?1:0,transform:inView?"none":"translateY(20px)",transition:"all 0.6s"}}>
           <SectionTag num="07" label="Guestbook" C={C}/>
           <h2 style={{fontFamily:"system-ui",fontSize:"clamp(28px,4vw,46px)",fontWeight:800,letterSpacing:"-0.02em",margin:"0 0 8px",color:C.textPrimary}}>Leave your <span style={{color:C.accent}}>mark.</span></h2>
           <p style={{color:C.textSecondary,fontSize:14,marginBottom:36}}>Sign the wall. Your name shows instantly — messages are reviewed before going live.</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"380px 1fr",gap:24,opacity:inView?1:0,transition:"all 0.7s 0.2s"}}>
+        <div className="guestbook-grid" style={{display:"grid",gridTemplateColumns:"minmax(0,380px) 1fr",gap:24,opacity:inView?1:0,transition:"all 0.7s 0.2s"}}>
           <div style={mkPanel(C,{padding:24,borderColor:C.accent+"30"})}>
             <div style={{fontFamily:"monospace",fontSize:10,color:C.accent,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:16}}>Sign the wall</div>
             <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name *" maxLength={32} style={{width:"100%",padding:"10px 14px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:7,color:C.textPrimary,fontFamily:"monospace",fontSize:12,outline:"none",marginBottom:10,boxSizing:"border-box"}}/>

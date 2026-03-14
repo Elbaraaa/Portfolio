@@ -3,13 +3,20 @@ import { SECTION_COMMENTS } from "../data/content";
 
 export function AstronautAvatar({ C, isDark }) {
   const astronautRef = useRef(null), bubbleRef = useRef(null);
-  const posRef = useRef({x:200,y:200}), targetRef = useRef({x:200,y:200}), velRef = useRef({x:0,y:0});
+  const initX = typeof window !== "undefined" && window.innerWidth < 768 ? 20 : 200;
+  const initY = typeof window !== "undefined" && window.innerWidth < 768 ? 80 : 200;
+  const posRef = useRef({x:initX,y:initY}), targetRef = useRef({x:initX,y:initY}), velRef = useRef({x:0,y:0});
   const bobT = useRef(0), sectionRef = useRef("hero"), commentTimer = useRef(null);
   const [comment, setComment] = useState(SECTION_COMMENTS.hero[0]);
   const [spin, setSpin] = useState(false);
   useEffect(() => {
     const onMove = e => { targetRef.current = {x:e.clientX-60,y:e.clientY-80}; };
+    const onTouch = e => {
+      const t = e.touches[0];
+      targetRef.current = {x:t.clientX-60, y:t.clientY-80};
+    };
     window.addEventListener("mousemove", onMove, {passive:true});
+    window.addEventListener("touchmove", onTouch, {passive:true});
     let raf;
     const animate = () => {
       const t=targetRef.current,p=posRef.current,v=velRef.current;
@@ -20,7 +27,7 @@ export function AstronautAvatar({ C, isDark }) {
       raf=requestAnimationFrame(animate);
     };
     raf=requestAnimationFrame(animate);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("mousemove",onMove); };
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("mousemove",onMove); window.removeEventListener("touchmove",onTouch); };
   }, []);
   useEffect(() => {
     const onClick = () => {
@@ -51,7 +58,7 @@ export function AstronautAvatar({ C, isDark }) {
     window.addEventListener("scroll",onScroll,{passive:true}); return ()=>window.removeEventListener("scroll",onScroll);
   }, []);
   return (
-    <div style={{position:"fixed",left:0,top:0,zIndex:400,pointerEvents:"none"}}>
+    <div className="astronaut-root" style={{position:"fixed",left:0,top:0,zIndex:400,pointerEvents:"none"}}>
       <div ref={bubbleRef} style={{position:"absolute",left:0,top:0,maxWidth:190,padding:"9px 13px",background:C.panel,border:`1px solid ${C.accent}40`,borderRadius:"12px 12px 12px 4px",fontFamily:"system-ui",fontSize:12,color:C.textSecondary,lineHeight:1.5,opacity:0,transition:"opacity 0.35s ease",whiteSpace:"nowrap",willChange:"transform"}}>
         {comment}
         <div style={{position:"absolute",left:-6,bottom:10,width:0,height:0,borderTop:"5px solid transparent",borderBottom:"5px solid transparent",borderRight:`6px solid ${C.panel}`}}/>
