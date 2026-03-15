@@ -219,7 +219,7 @@ function RubiksCube({ onExplode }) {
   return (
     <div ref={mountRef} onMouseDown={startHold} onMouseUp={endHold} onMouseLeave={endHold}
       onTouchStart={startHold} onTouchEnd={endHold}
-      style={{ position:"absolute", inset:0, zIndex:998, cursor:"none", userSelect:"none", WebkitUserSelect:"none" }}
+      style={{ position:"absolute", inset:0, zIndex:100, cursor:"none", userSelect:"none", WebkitUserSelect:"none" }}
       data-cube-overlay="true"
     />
   );
@@ -247,7 +247,7 @@ function SkillCard({ cat, visible, delay, C }) {
   );
 }
 
-export function SkillsSection({ C }) {
+export function SkillsSection({ C, darkMode }) {
   const { ref, inView } = useInView(0.1);
   const [phase, setPhase]               = useState("idle");
   const [isMobile, setIsMobile]         = useState(false);
@@ -274,13 +274,11 @@ export function SkillsSection({ C }) {
     setTimeout(() => { setPhase("idle"); setShowCube(true); }, 600);
   }, []);
 
-  // Collapse on scroll when grid is showing
   useEffect(() => {
     if (phase !== "grid" || !cardsVisible) return;
     let scrollStart = window.scrollY;
     let settled = false;
 
-    // Wait a moment for the explode animation to settle before listening
     const settleTimer = setTimeout(() => { scrollStart = window.scrollY; settled = true; }, 1000);
 
     const onScroll = () => {
@@ -295,7 +293,6 @@ export function SkillsSection({ C }) {
     return () => { window.removeEventListener("scroll", onScroll); clearTimeout(settleTimer); };
   }, [phase, cardsVisible, handleCollapse]);
 
-  // Collapse on click outside the skill cards
   useEffect(() => {
     if (phase !== "grid" || !cardsVisible) return;
 
@@ -305,7 +302,6 @@ export function SkillsSection({ C }) {
       }
     };
 
-    // Delay adding listener so the explode click doesn't immediately trigger it
     const timer = setTimeout(() => {
       window.addEventListener("click", onClick);
     }, 800);
@@ -316,15 +312,23 @@ export function SkillsSection({ C }) {
   return (
     <section id="skills" ref={ref} className="section-pad" style={{ padding: "96px 60px", background: "transparent", minHeight: "100vh", display: "flex", alignItems: phase === "grid" ? "flex-start" : "center", paddingTop: phase === "grid" ? 96 : undefined, position: "relative" }}>
       <div style={{
-        position: "fixed", left: "50%", top: "50%",
-        width: "100vmax", height: "100vmax", borderRadius: "50%",
-        background: `radial-gradient(circle, ${C.accent}F0 0%, ${C.accent}CC 35%, #070B14 75%, ${C.bg} 100%)`,
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        width: "100vmax",
+        height: "100vmax",
+        borderRadius: "50%",
+        background: darkMode
+          ? `radial-gradient(circle, ${C.accent}55 0%, ${C.accent}22 28%, rgba(7,11,20,0.92) 62%, ${C.bg} 100%)`
+          : `radial-gradient(circle, ${C.accent}30 0%, ${C.accent}12 28%, rgba(255,255,255,0.78) 62%, ${C.bg} 100%)`,
         transform: `translate(-50%,-50%) scale(${bgActive ? 3.0 : 0})`,
         opacity: bgActive ? 1 : 0,
         transition: bgActive
           ? "transform 1.4s cubic-bezier(0.2,0,0.2,1), opacity 0.15s ease-in"
           : "transform 0.6s cubic-bezier(0.4,0,1,1), opacity 0.5s ease-out",
-        willChange: "transform", zIndex: 997, pointerEvents: "none",
+        willChange: "transform",
+        zIndex: 997,
+        pointerEvents: "none",
       }}/>
       {!isMobile && showCube && inView && phase === "idle" && <RubiksCube onExplode={handleExplode}/>}
       <div style={{ maxWidth: 1080, margin: "0 auto", width: "100%", position: "relative", zIndex: 1000, pointerEvents: "none" }}>
@@ -370,14 +374,35 @@ export function SkillsSection({ C }) {
           </div>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <button onClick={handleCollapse} style={{
-              display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 24px",
-              background: "none", border: `1px solid ${C.border}`, borderRadius: 8,
-              color: C.textSecondary, fontFamily: "monospace", fontSize: 12, cursor: "pointer",
-              opacity: cardsVisible ? 1 : 0, transform: cardsVisible ? "none" : "translateY(8px)",
-              transition: "opacity 0.4s 0.5s, transform 0.4s 0.5s, border-color 0.2s, color 0.2s",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "11px 24px",
+              background: C.panel,
+              border: `1px solid ${C.accent}55`,
+              borderRadius: 10,
+              color: C.textPrimary,
+              fontFamily: "monospace",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: `0 8px 22px ${C.accent}18`,
+              opacity: cardsVisible ? 1 : 0,
+              transform: cardsVisible ? "none" : "translateY(8px)",
+              transition: "opacity 0.4s 0.5s, transform 0.4s 0.5s, border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s",
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent + "60"; e.currentTarget.style.color = C.accent; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSecondary; }}>
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = C.accent;
+                e.currentTarget.style.color = C.accent;
+                e.currentTarget.style.background = C.accent + "10";
+                e.currentTarget.style.boxShadow = `0 10px 26px ${C.accent}28`;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = C.accent + "55";
+                e.currentTarget.style.color = C.textPrimary;
+                e.currentTarget.style.background = C.panel;
+                e.currentTarget.style.boxShadow = `0 8px 22px ${C.accent}18`;
+              }}>
               ← Collapse back to cube
             </button>
           </div>
