@@ -24,11 +24,8 @@ export function ExperienceSection({ C }) {
             <div style={{paddingBottom:32,flex:1,minWidth:0}}>
               <div style={mkPanel(C,{
                 padding:20,
-                transition:"border-color 0.3s,box-shadow 0.3s",
                 boxShadow:`0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)`
-              })}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=`${C.accent}30`;e.currentTarget.style.boxShadow=`0 0 20px ${C.accent}15, 0 4px 20px rgba(0,0,0,0.4)`;}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.boxShadow=`0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)`;}}>
+              })}>
                 <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:10}}>
                   <div style={{minWidth:0}}>
                     <h3 style={{fontFamily:"system-ui",fontWeight:700,fontSize:15,color:C.textPrimary,margin:"0 0 3px"}}>{exp.role}</h3>
