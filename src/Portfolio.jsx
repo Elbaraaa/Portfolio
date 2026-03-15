@@ -9,7 +9,7 @@ import { DARK, LIGHT } from "./styles/theme";
 import { globalCSS } from "./styles/globalCSS";
 
 // Hooks
-import { useSectionSnap, useWindowWidth } from "./hooks/useInView";
+import { useSectionSnap } from "./hooks/useInView";
 
 // Global chrome
 import { InteractiveBg } from "./components/InteractiveBg";
@@ -36,8 +36,8 @@ export default function Portfolio() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { current, goTo } = useSectionSnap();
   const [darkMode, setDarkMode] = useState(true);
+  const [touchActive, setTouchActive] = useState(false);
   const C = darkMode ? DARK : LIGHT;
-  const isMobile = useWindowWidth() <= 767;
 
   useEffect(() => {
     let buf = "";
@@ -50,8 +50,32 @@ export default function Portfolio() {
     return () => window.removeEventListener("keydown", h);
   }, []);
 
+  useEffect(() => {
+    const onTouchStart = () => setTouchActive(true);
+    const onMouseMove = () => setTouchActive(false);
+    const onMouseDown = () => setTouchActive(false);
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    window.addEventListener("mousedown", onMouseDown);
+
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mousedown", onMouseDown);
+    };
+  }, []);
+
   return (
-    <div style={{ background: C.bg, color: C.textPrimary, fontFamily: "system-ui,-apple-system,sans-serif", cursor: "none", transition: "background 0.4s, color 0.4s" }}>
+    <div
+      style={{
+        background: C.bg,
+        color: C.textPrimary,
+        fontFamily: "system-ui,-apple-system,sans-serif",
+        cursor: touchActive ? "auto" : "none",
+        transition: "background 0.4s, color 0.4s"
+      }}
+    >
       <style>{globalCSS}</style>
       <style>{`
         ::-webkit-scrollbar-track{background:${C.bg}}
@@ -60,10 +84,16 @@ export default function Portfolio() {
       `}</style>
 
       <InteractiveBg C={C} isDark={darkMode} />
-      {!isMobile && <CustomCursor C={C} isDark={darkMode} />}
+      {!touchActive && <CustomCursor C={C} isDark={darkMode} />}
       <AstronautAvatar C={C} isDark={darkMode} />
       <SectionDots current={current} goTo={goTo} C={C} />
-      <NavBar onMenu={() => setMenuOpen(true)} onTerminal={() => setTerminal(true)} C={C} darkMode={darkMode} toggleDark={() => setDarkMode((d) => !d)} />
+      <NavBar
+        onMenu={() => setMenuOpen(true)}
+        onTerminal={() => setTerminal(true)}
+        C={C}
+        darkMode={darkMode}
+        toggleDark={() => setDarkMode((d) => !d)}
+      />
       <MenuOverlay open={menuOpen} onClose={() => setMenuOpen(false)} goTo={goTo} C={C} />
 
       <HeroSection onMenu={() => setMenuOpen(true)} onHire={() => goTo(SECTIONS.indexOf("hire"))} C={C} />
