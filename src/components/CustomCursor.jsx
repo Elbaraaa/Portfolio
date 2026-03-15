@@ -38,12 +38,21 @@ export function CustomCursor({ C, isDark }) {
 
         ring.current.x+=(x-ring.current.x)*0.12;
         ring.current.y+=(y-ring.current.y)*0.12;
+
         let size, color, opacity;
-        if(hovering.current)      { size=44; color=C.green;  opacity="0.8"; }
-        else if(clicking.current) { size=20; color=C.pink;   opacity="0.9"; }
-        else                      { size=32; color=C.accent; opacity="0.5"; }
+        if (isDark) {
+          if(hovering.current)      { size=44; color=C.green;  opacity="0.8"; }
+          else if(clicking.current) { size=20; color=C.pink;   opacity="0.9"; }
+          else                      { size=32; color=C.accent; opacity="0.5"; }
+        } else {
+          if(hovering.current)      { size=44; color="#234D3B"; opacity="0.8"; }
+          else if(clicking.current) { size=20; color="#234D3B"; opacity="0.9"; }
+          else                      { size=32; color="#234D3B"; opacity="0.5"; }
+        }
+
         ringEl.style.transform=`translate(${ring.current.x-size/2}px,${ring.current.y-size/2}px)`;
-        ringEl.style.width=size+"px"; ringEl.style.height=size+"px";
+        ringEl.style.width=size+"px";
+        ringEl.style.height=size+"px";
         ringEl.style.borderColor=color;
         ringEl.style.opacity=opacity;
 
@@ -55,32 +64,136 @@ export function CustomCursor({ C, isDark }) {
 
         trailPos[0]={...pos.current};
         for(let i=1;i<TRAIL_COUNT;i++){
-          trailPos[i]={x:trailPos[i].x+(trailPos[i-1].x-trailPos[i].x)*0.35, y:trailPos[i].y+(trailPos[i-1].y-trailPos[i].y)*0.35};
+          trailPos[i]={
+            x:trailPos[i].x+(trailPos[i-1].x-trailPos[i].x)*0.35,
+            y:trailPos[i].y+(trailPos[i-1].y-trailPos[i].y)*0.35
+          };
         }
-        trails.forEach((el,i)=>{ if(!el)return; const sz=3-i*0.25; el.style.transform=`translate(${trailPos[i].x-sz/2}px,${trailPos[i].y-sz/2}px)`; el.style.opacity=((1-i/TRAIL_COUNT)*0.35).toString(); el.style.width=sz+"px"; el.style.height=sz+"px"; });
+
+        trails.forEach((el,i)=>{
+          if(!el)return;
+          const sz=3-i*0.25;
+          el.style.transform=`translate(${trailPos[i].x-sz/2}px,${trailPos[i].y-sz/2}px)`;
+          el.style.opacity=((1-i/TRAIL_COUNT)*0.35).toString();
+          el.style.width=sz+"px";
+          el.style.height=sz+"px";
+        });
       }
       raf=requestAnimationFrame(animate);
     };
     raf=requestAnimationFrame(animate);
-    return ()=>{ cancelAnimationFrame(raf); window.removeEventListener("mousemove",move); window.removeEventListener("mousedown",down); window.removeEventListener("mouseup",up); document.removeEventListener("mouseover",onOver); };
-  }, []);
+    return ()=>{
+      cancelAnimationFrame(raf);
+      window.removeEventListener("mousemove",move);
+      window.removeEventListener("mousedown",down);
+      window.removeEventListener("mouseup",up);
+      document.removeEventListener("mouseover",onOver);
+    };
+  }, [isDark]);
 
   return (
     <>
-      <div ref={dotRef} style={{position:"fixed",top:0,left:0,width:8,height:8,borderRadius:"50%",background:isDark?`linear-gradient(135deg,${C.accent},${C.green})`:"#111827",pointerEvents:"none",zIndex:9999,willChange:"transform"}}/>
-      <div ref={ringRef} style={{position:"fixed",top:0,left:0,width:32,height:32,borderRadius:"50%",border:`1.5px solid ${isDark?C.accent:"#374151"}`,pointerEvents:"none",zIndex:9998,transition:"width 0.18s,height 0.18s,border-color 0.18s,opacity 0.18s",willChange:"transform"}}/>
-      {Array(8).fill(null).map((_,i)=><div key={i} ref={el=>trailsRef.current[i]=el} style={{position:"fixed",top:0,left:0,width:3,height:3,borderRadius:"50%",background:isDark?C.accent:"#374151",pointerEvents:"none",zIndex:9997,willChange:"transform"}}/>)}
-      <div ref={clickLabelRef} style={{position:"fixed",top:0,left:0,pointerEvents:"none",zIndex:10000,willChange:"transform",opacity:0,transition:"opacity 0.15s, transform 0.15s"}}>
-        <div style={{background:`linear-gradient(135deg,${C.accent}CC,${C.green}CC)`,backdropFilter:"blur(6px)",border:`1px solid ${C.accent}60`,borderRadius:6,padding:"3px 8px",fontFamily:"monospace",fontSize:10,fontWeight:700,color:"#fff",letterSpacing:"0.08em",whiteSpace:"nowrap",boxShadow:`0 0 12px ${C.accent}40`}}>
+      <div
+        ref={dotRef}
+        style={{
+          position:"fixed",
+          top:0,
+          left:0,
+          width:8,
+          height:8,
+          borderRadius:"50%",
+          background:isDark
+            ? `linear-gradient(135deg,${C.accent},${C.green})`
+            : "#000000",
+          pointerEvents:"none",
+          zIndex:9999,
+          willChange:"transform"
+        }}
+      />
+      <div
+        ref={ringRef}
+        style={{
+          position:"fixed",
+          top:0,
+          left:0,
+          width:32,
+          height:32,
+          borderRadius:"50%",
+          border:`1.5px solid ${isDark ? C.accent : "#234D3B"}`,
+          pointerEvents:"none",
+          zIndex:9998,
+          transition:"width 0.18s,height 0.18s,border-color 0.18s,opacity 0.18s",
+          willChange:"transform"
+        }}
+      />
+      {Array(8).fill(null).map((_,i)=>
+        <div
+          key={i}
+          ref={el=>trailsRef.current[i]=el}
+          style={{
+            position:"fixed",
+            top:0,
+            left:0,
+            width:3,
+            height:3,
+            borderRadius:"50%",
+            background:isDark ? C.accent : "#234D3B",
+            pointerEvents:"none",
+            zIndex:9997,
+            willChange:"transform"
+          }}
+        />
+      )}
+      <div
+        ref={clickLabelRef}
+        style={{
+          position:"fixed",
+          top:0,
+          left:0,
+          pointerEvents:"none",
+          zIndex:10000,
+          willChange:"transform",
+          opacity:0,
+          transition:"opacity 0.15s, transform 0.15s"
+        }}
+      >
+        <div
+          style={{
+            background:`linear-gradient(135deg,${C.accent}CC,${C.green}CC)`,
+            backdropFilter:"blur(6px)",
+            border:`1px solid ${C.accent}60`,
+            borderRadius:6,
+            padding:"3px 8px",
+            fontFamily:"monospace",
+            fontSize:10,
+            fontWeight:700,
+            color:"#fff",
+            letterSpacing:"0.08em",
+            whiteSpace:"nowrap",
+            boxShadow:`0 0 12px ${C.accent}40`
+          }}
+        >
           CLICK
         </div>
       </div>
-      <div ref={grabLabelRef} style={{position:"fixed",top:0,left:0,pointerEvents:"none",zIndex:10000,willChange:"transform",opacity:0,transition:"opacity 0.15s, transform 0.2s cubic-bezier(0.34,1.56,0.64,1)"}}>
+      <div
+        ref={grabLabelRef}
+        style={{
+          position:"fixed",
+          top:0,
+          left:0,
+          pointerEvents:"none",
+          zIndex:10000,
+          willChange:"transform",
+          opacity:0,
+          transition:"opacity 0.15s, transform 0.2s cubic-bezier(0.34,1.56,0.64,1)"
+        }}
+      >
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
           <circle cx="20" cy="20" r="18" stroke={C.orange} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7"/>
-          <line x1="20" y1="4"  x2="20" y2="11" stroke={C.orange} strokeWidth="2" strokeLinecap="round"/>
+          <line x1="20" y1="4" x2="20" y2="11" stroke={C.orange} strokeWidth="2" strokeLinecap="round"/>
           <line x1="20" y1="29" x2="20" y2="36" stroke={C.orange} strokeWidth="2" strokeLinecap="round"/>
-          <line x1="4"  y1="20" x2="11" y2="20" stroke={C.orange} strokeWidth="2" strokeLinecap="round"/>
+          <line x1="4" y1="20" x2="11" y2="20" stroke={C.orange} strokeWidth="2" strokeLinecap="round"/>
           <line x1="29" y1="20" x2="36" y2="20" stroke={C.orange} strokeWidth="2" strokeLinecap="round"/>
           <circle cx="20" cy="20" r="3" fill={C.orange} opacity="0.9"/>
           <circle cx="20" cy="20" r="7" stroke={C.orange} strokeWidth="1" opacity="0.4"/>
