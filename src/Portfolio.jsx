@@ -52,8 +52,17 @@ export default function Portfolio() {
 
   useEffect(() => {
     const onTouchStart = () => setTouchActive(true);
-    const onMouseMove = () => setTouchActive(false);
-    const onMouseDown = () => setTouchActive(false);
+
+    const onMouseMove = (e) => {
+      if ("sourceCapabilities" in e && e.sourceCapabilities?.firesTouchEvents) return;
+      if (e.movementX === 0 && e.movementY === 0) return;
+      setTouchActive(false);
+    };
+
+    const onMouseDown = (e) => {
+      if ("sourceCapabilities" in e && e.sourceCapabilities?.firesTouchEvents) return;
+      setTouchActive(false);
+    };
 
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("mousemove", onMouseMove, { passive: true });
@@ -85,7 +94,7 @@ export default function Portfolio() {
 
       <InteractiveBg C={C} isDark={darkMode} />
       {!touchActive && <CustomCursor C={C} isDark={darkMode} />}
-      <AstronautAvatar C={C} isDark={darkMode} />
+      {!touchActive && <AstronautAvatar C={C} isDark={darkMode} />}
       <SectionDots current={current} goTo={goTo} C={C} />
       <NavBar
         onMenu={() => setMenuOpen(true)}
