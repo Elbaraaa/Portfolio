@@ -159,10 +159,10 @@ export function NavBar({ onMenu, onTerminal, C, darkMode, toggleDark }) {
             width:82,
             height:34,
             borderRadius:999,
-            border:`1px solid ${darkMode ? "rgba(255,255,255,0.08)" : "rgba(99,102,241,0.14)"}`,
+            border:`1px solid ${darkMode ? "rgba(255,255,255,0.08)" : `${C.green}30`}`,
             background: darkMode
               ? "linear-gradient(90deg, #0f172a, #1e293b)"
-              : "linear-gradient(90deg, #dbeafe, #ede9fe)",
+              : `linear-gradient(90deg, ${C.green}10, ${C.green}08)`,
             cursor:"pointer",
             padding:0,
             transition:"background 0.3s ease, border-color 0.3s ease",
