@@ -9,7 +9,6 @@ export function AboutSection({ C }) {
   const cardStyle = mkPanel(C, {
     padding:18,
     cursor:"default",
-    transition:"border-color 0.3s,box-shadow 0.3s",
     boxShadow:`0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)`
   });
   return (
@@ -37,9 +36,7 @@ export function AboutSection({ C }) {
           </div>
           <div className="about-skills-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,...anim(0.2)}}>
             {[{icon:"⌨️",label:"Engineer",desc:"Full-stack systems from DB to UI."},{icon:"🧠",label:"Researcher",desc:"Applied AI, RAG pipelines & knowledge systems."},{icon:"👥",label:"Educator",desc:"Helped 500+ students level up."},{icon:"🚀",label:"Builder",desc:"Real tools used by real people."}].map(p=>(
-              <div key={p.label} style={cardStyle}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent+"40";e.currentTarget.style.boxShadow=`0 0 20px ${C.accent}20, 0 4px 20px rgba(0,0,0,0.4)`;}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.boxShadow=`0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)`;}}>
+              <div key={p.label} style={cardStyle}>
                 <div style={{fontSize:20,marginBottom:10}}>{p.icon}</div>
                 <div style={{fontFamily:"system-ui",fontWeight:700,fontSize:14,color:C.textPrimary,marginBottom:6}}>{p.label}</div>
                 <div style={{fontSize:12,color:C.textDim,lineHeight:1.6}}>{p.desc}</div>
