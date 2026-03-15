@@ -10,7 +10,7 @@ export const globalCSS = `
   html{scroll-snap-type:y mandatory;overflow-y:scroll;scroll-behavior:smooth;overflow-x:hidden}
   section{}
   ::-webkit-scrollbar{width:4px}
-  ::selection{background:rgba(124,111,255,0.25)}
+  ::selection{background:rgba(35,77,59,0.18)}
   .grad-text{-webkit-background-clip:text !important;background-clip:text !important;-webkit-text-fill-color:transparent !important;color:transparent !important}
 
   /* Game overlay */

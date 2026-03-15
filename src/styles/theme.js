@@ -5,10 +5,19 @@ export const DARK = {
 };
 
 export const LIGHT = {
-  bg: "#F2F2F2", surface: "#FFFFFF", panel: "#FAFAFA", border: "#D4D4D4",
-  accent: "#404040", green: "#525252", pink: "#737373", orange: "#595959",
-  textPrimary: "#171717", textSecondary: "#525252", textDim: "#A3A3A3",
+  bg: "#F6F2E8",
+  surface: "#FBF8F1",
+  panel: "rgba(251,248,241,0.84)",
+  border: "#D1C7B8",
+  accent: "#234D3B",
+  green: "#58714F",
+  pink: "#8A9A82",
+  orange: "#C89B5D",
+  textPrimary: "#18241F",
+  textSecondary: "#667167",
+  textDim: "#A89F91",
 };
+
 
 export const mkPanel = (C, extra) =>
   Object.assign(
