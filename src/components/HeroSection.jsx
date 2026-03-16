@@ -4,6 +4,41 @@ import { mkPanel } from "../styles/theme";
 import { Typewriter } from "./ui";
 import { useWindowWidth } from "../hooks/useInView";
 
+function EmailIcon({ color = "currentColor", size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M3 6.75C3 5.784 3.784 5 4.75 5h14.5C20.216 5 21 5.784 21 6.75v10.5c0 .966-.784 1.75-1.75 1.75H4.75A1.75 1.75 0 0 1 3 17.25V6.75Z"
+        stroke={color}
+        strokeWidth="1.8"
+      />
+      <path
+        d="m4 7 8 6 8-6"
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function GitHubIcon({ color = "currentColor", size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.62-2.8 5.64-5.48 5.94.43.37.82 1.1.82 2.22v3.29c0 .32.22.69.83.58A12 12 0 0 0 12 .5Z" />
+    </svg>
+  );
+}
+
+function LinkedInIcon({ color = "currentColor", size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <path d="M4.98 3.5A2.48 2.48 0 1 0 5 8.46 2.48 2.48 0 0 0 4.98 3.5ZM3 9h4v12H3V9Zm7 0h3.83v1.64h.05c.53-1.01 1.84-2.08 3.79-2.08C21.72 8.56 23 11.03 23 14.28V21h-4v-5.96c0-1.42-.03-3.24-1.98-3.24-1.98 0-2.28 1.55-2.28 3.14V21h-4V9Z" />
+    </svg>
+  );
+}
+
 export function HeroSection({ onMenu, onHire, C }) {
   const [uptime, setUptime] = useState(0);
   const width = useWindowWidth();
@@ -15,6 +50,24 @@ export function HeroSection({ onMenu, onHire, C }) {
     const t = setInterval(() => setUptime(Math.floor((Date.now() - s) / 1000)), 1000);
     return () => clearInterval(t);
   }, []);
+
+  const socialLinks = [
+    {
+      label: "Email",
+      href: "mailto:baraa@email.arizona.edu",
+      icon: EmailIcon
+    },
+    {
+      label: "GitHub",
+      href: "https://github.com/baraaabdalla",
+      icon: GitHubIcon
+    },
+    {
+      label: "LinkedIn",
+      href: "https://linkedin.com/in/baraaabdalla",
+      icon: LinkedInIcon
+    }
+  ];
 
   return (
     <section
@@ -221,12 +274,64 @@ export function HeroSection({ onMenu, onHire, C }) {
             fontSize: "clamp(16px, 1.05vw, 20px)",
             lineHeight: 1.75,
             maxWidth: "clamp(540px, 36vw, 720px)",
-            marginBottom: "clamp(32px, 2.4vw, 42px)",
+            marginBottom: "clamp(20px, 1.6vw, 28px)",
             animation: "fadeUp 0.6s 1.1s both"
           }}
         >
           I build systems that close the gap between research and real-world impact.
         </p>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "clamp(10px, 0.9vw, 14px)",
+            flexWrap: "wrap",
+            marginBottom: "clamp(24px, 1.8vw, 30px)",
+            animation: "fadeUp 0.6s 1.15s both"
+          }}
+        >
+          {socialLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                target={item.href.startsWith("mailto:") ? undefined : "_blank"}
+                rel={item.href.startsWith("mailto:") ? undefined : "noreferrer"}
+                aria-label={item.label}
+                title={item.label}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "clamp(10px, 0.85vw, 13px) clamp(14px, 1vw, 18px)",
+                  borderRadius: 999,
+                  border: `1px solid ${C.border}`,
+                  background: C.surface,
+                  color: C.textSecondary,
+                  textDecoration: "none",
+                  fontFamily: "monospace",
+                  fontSize: "clamp(12px, 0.85vw, 14px)",
+                  transition: "transform 0.2s ease, border-color 0.2s ease, color 0.2s ease"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.borderColor = C.accent;
+                  e.currentTarget.style.color = C.accent;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.borderColor = C.border;
+                  e.currentTarget.style.color = C.textSecondary;
+                }}
+              >
+                <Icon size={16} color="currentColor" />
+                <span>{item.label}</span>
+              </a>
+            );
+          })}
+        </div>
 
         <div
           style={{

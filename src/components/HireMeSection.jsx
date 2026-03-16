@@ -16,14 +16,17 @@ export function HireMeSection({ C }) {
       setErr("Please fill in name, email and message.");
       return;
     }
+
     setSending(true);
     setErr("");
+
     try {
       const res = await fetch("https://formspree.io/f/YOUR_FORMSPREE_ID", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(form)
       });
+
       if (res.ok) {
         setSent(true);
         setForm({ name: "", email: "", company: "", message: "" });
@@ -33,6 +36,7 @@ export function HireMeSection({ C }) {
     } catch {
       setErr("Network error. Try emailing me directly!");
     }
+
     setSending(false);
   };
 
@@ -66,6 +70,32 @@ export function HireMeSection({ C }) {
           pointerEvents: "none"
         }}
       />
+
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          pointerEvents: "none",
+          zIndex: 1
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "system-ui",
+            fontWeight: 800,
+            fontSize: "18vw",
+            color: C.textPrimary,
+            opacity: 0.012,
+            userSelect: "none"
+          }}
+        >
+          HELLO
+        </span>
+      </div>
+
       <div
         style={{
           maxWidth: "clamp(1120px, 78vw, 1400px)",
@@ -90,38 +120,38 @@ export function HireMeSection({ C }) {
               marginBottom: "clamp(10px, 1vw, 14px)"
             }}
           >
-            <SectionTag num="08" label="Hire Me" C={C} />
+            <SectionTag num="08" label="Let’s Connect" C={C} />
           </div>
 
           <h2
             style={{
               fontFamily: "system-ui",
-              fontSize: "clamp(32px, 4.2vw, 54px)",
+              fontSize: "clamp(36px, 5vw, 62px)",
               fontWeight: 800,
               letterSpacing: "-0.02em",
-              margin: "0 0 10px"
+              margin: "0 0 clamp(16px, 1.2vw, 20px)"
             }}
           >
-            <span style={{ color: C.textPrimary }}>Ready to </span>
+            <span style={{ color: C.textPrimary }}>Let&apos;s build</span>
+            <br />
             <span
               className="grad-text"
               style={{ background: `linear-gradient(90deg,${C.accent},${C.green})` }}
             >
-              make an impact.
+              something real.
             </span>
           </h2>
 
           <p
             style={{
               color: C.textSecondary,
-              fontSize: "clamp(15px, 1vw, 18px)",
+              fontSize: "clamp(16px, 1.05vw, 20px)",
               lineHeight: 1.75,
               maxWidth: "clamp(560px, 42vw, 760px)",
               marginBottom: "clamp(34px, 2.6vw, 48px)"
             }}
           >
-            Looking for Summer 2026 internships in software engineering, full-stack dev, and
-            applied AI.
+            Seeking Summer 2026 internships in software engineering, full-stack dev, and applied AI.
           </p>
         </div>
 
@@ -220,8 +250,7 @@ export function HireMeSection({ C }) {
                   lineHeight: 1.7
                 }}
               >
-                If you're working on hard problems that need a builder who cares — let&apos;s
-                talk.
+                If you&apos;re working on hard problems that need a builder who cares — let&apos;s talk.
               </p>
 
               <div style={{ display: "flex", gap: "clamp(10px, 0.8vw, 14px)", flexWrap: "wrap" }}>

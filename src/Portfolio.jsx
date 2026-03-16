@@ -29,7 +29,7 @@ import { AchievementsSection } from "./components/AchievementsSection";
 import { ArcadeSection } from "./components/ArcadeSection";
 import { GuestbookSection } from "./components/GuestbookSection";
 import { HireMeSection } from "./components/HireMeSection";
-import { ContactSection } from "./components/ContactSection";
+// import { ContactSection } from "./components/ContactSection";
 
 export default function Portfolio() {
   const [terminal, setTerminal] = useState(false);
@@ -115,7 +115,7 @@ export default function Portfolio() {
       <ArcadeSection C={C} />
       <GuestbookSection C={C} />
       <HireMeSection C={C} />
-      <ContactSection C={C} />
+      {/* <ContactSection C={C} /> */}
       <Footer C={C} />
 
       <BackToTop goTo={goTo} C={C} />
