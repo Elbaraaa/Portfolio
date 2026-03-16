@@ -9,7 +9,7 @@ import { DARK, LIGHT } from "./styles/theme";
 import { globalCSS } from "./styles/globalCSS";
 
 // Hooks
-import { useSectionSnap } from "./hooks/useInView";
+// import { useSectionSnap } from "./hooks/useInView";
 
 // Global chrome
 import { InteractiveBg } from "./components/InteractiveBg";
@@ -34,7 +34,16 @@ import { HireMeSection } from "./components/HireMeSection";
 export default function Portfolio() {
   const [terminal, setTerminal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { current, goTo } = useSectionSnap();
+  // const { current, goTo } = useSectionSnap();
+  const [current, setCurrent] = useState(0);
+  const goTo = (index) => {
+    const id = SECTIONS[index];
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setCurrent(index);
+    }
+  };
   const [darkMode, setDarkMode] = useState(true);
   const [touchActive, setTouchActive] = useState(false);
   const C = darkMode ? DARK : LIGHT;
@@ -76,6 +85,33 @@ export default function Portfolio() {
     };
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      let bestIndex = 0;
+      let bestDistance = Infinity;
+
+      SECTIONS.forEach((id, index) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const rect = el.getBoundingClientRect();
+        const distance = Math.abs(rect.top);
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestIndex = index;
+        }
+      });
+
+      setCurrent(bestIndex);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div
       style={{
@@ -99,7 +135,7 @@ export default function Portfolio() {
       <SectionDots current={current} goTo={goTo} C={C} />
       <NavBar
         onMenu={() => setMenuOpen(true)}
-        onTerminal={() => setTerminal(true)}
+        onTerminal={() => setTerminal((t) => !t)}
         C={C}
         darkMode={darkMode}
         toggleDark={() => setDarkMode((d) => !d)}
