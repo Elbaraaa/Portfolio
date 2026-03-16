@@ -3,6 +3,395 @@ import { mkPanel } from "../styles/theme";
 import { useInView } from "../hooks/useInView";
 import { SectionTag } from "./ui";
 
+function RubiksCube({ onExplode }) {
+  const mountRef = useRef(null);
+  const stateRef = useRef({});
+  const holdTimer = useRef(null);
+  const isHolding = useRef(false);
+
+  useEffect(() => {
+    const st = stateRef.current;
+    let THREE, renderer, scene, camera, cubeGroup, cubies = [];
+    let sliceAnimating = false,
+      animSlice = [],
+      animAxis = null,
+      animAngle = 0;
+    let animDur = 320,
+      animT0 = 0,
+      animStartPos = [],
+      animStartQuat = [];
+    let rotY = 0,
+      raf;
+    const CS = 0.95,
+      GAP = 0.02,
+      STEP = CS + GAP;
+    const FC = {
+      px: 0x7c6fff,
+      nx: 0x4affc4,
+      py: 0xf97fff,
+      ny: 0xffb347,
+      pz: 0x7c6fff,
+      nz: 0x4affc4
+    };
+
+    function loadThree() {
+      if (window.THREE) {
+        THREE = window.THREE;
+        setup();
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+      s.onload = () => {
+        THREE = window.THREE;
+        setup();
+      };
+      document.head.appendChild(s);
+    }
+
+    function getBounds() {
+      const el = mountRef.current;
+      if (!el) return { width: window.innerWidth, height: window.innerHeight };
+
+      const rect = el.getBoundingClientRect();
+      return {
+        width: Math.max(rect.width, 1),
+        height: Math.max(rect.height, 1)
+      };
+    }
+
+    function getResponsiveCubeScale(width, height) {
+      const basis = Math.min(width, height * 1.45);
+      return Math.max(0.6, Math.min(0.9, basis / 620));
+    }
+
+    function getResponsiveCameraZ(width, height) {
+      const basis = Math.min(width, height * 1.45);
+      return Math.max(12.4, Math.min(17.2, 16.8 - (basis - 320) * 0.009));
+    }
+
+    function roundedBox(size, radius, segs) {
+      const g = new THREE.BoxGeometry(size, size, size, segs, segs, segs);
+      const pos = g.attributes.position;
+      const v = new THREE.Vector3();
+      const half = size / 2,
+        inner = half - radius;
+      for (let i = 0; i < pos.count; i++) {
+        v.set(pos.getX(i), pos.getY(i), pos.getZ(i));
+        const cl = new THREE.Vector3(
+          Math.max(-inner, Math.min(inner, v.x)),
+          Math.max(-inner, Math.min(inner, v.y)),
+          Math.max(-inner, Math.min(inner, v.z))
+        );
+        const d = v.clone().sub(cl);
+        if (d.length() > 0) d.normalize().multiplyScalar(radius);
+        pos.setXYZ(i, cl.x + d.x, cl.y + d.y, cl.z + d.z);
+      }
+      g.computeVertexNormals();
+      return g;
+    }
+
+    function setup() {
+      const el = mountRef.current;
+      if (!el) return;
+      const W = window.innerWidth, H = window.innerHeight;
+      //st.baseCubeScale = getResponsiveCubeScale(W, H);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(W, H);
+      renderer.setClearColor(0x000000, 0);
+      el.appendChild(renderer.domElement);
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 200);
+      // camera.position.set(0, 0, getResponsiveCameraZ(W, H));
+      camera.position.set(0, 0, 11);
+
+      camera.lookAt(0, 0, 0);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+      const dl = new THREE.DirectionalLight(0xffffff, 1.0);
+      dl.position.set(5, 8, 6);
+      scene.add(dl);
+      const dl2 = new THREE.DirectionalLight(0x9999ff, 0.3);
+      dl2.position.set(-6, -2, 4);
+      scene.add(dl2);
+      const innerLight = new THREE.PointLight(0xffffff, 0, 14);
+      scene.add(innerLight);
+      st.innerLight = innerLight;
+
+      const bloomMat = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        uniforms: {
+          uOpacity: { value: 0.0 },
+          uColor: { value: new THREE.Color(0x7c6fff) }
+        },
+        vertexShader: `varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+        fragmentShader: `uniform float uOpacity; uniform vec3 uColor; varying vec3 vN; void main(){ float r=1.0-abs(dot(vN,vec3(0,0,1))); gl_FragColor=vec4(uColor,pow(r,1.2)*uOpacity); }`
+      });
+      const bloomSphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), bloomMat);
+      bloomSphere.renderOrder = 10;
+      scene.add(bloomSphere);
+      st.bloomSphere = bloomSphere;
+      st.bloomMat = bloomMat;
+
+      cubeGroup = new THREE.Group();
+      scene.add(cubeGroup);
+      const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0 });
+      const matCache = {};
+      for (const k in FC) {
+        matCache[k] = new THREE.MeshStandardMaterial({
+          color: FC[k],
+          roughness: 0.08,
+          metalness: 0.02,
+          emissive: new THREE.Color(FC[k]).multiplyScalar(0.06)
+        });
+      }
+      const geo = roundedBox(CS, 0.08, 8);
+
+      for (let x = -1; x <= 1; x++) {
+        for (let y = -1; y <= 1; y++) {
+          for (let z = -1; z <= 1; z++) {
+            const mesh = new THREE.Mesh(geo, [
+              x === 1 ? matCache.px : blackMat,
+              x === -1 ? matCache.nx : blackMat,
+              y === 1 ? matCache.py : blackMat,
+              y === -1 ? matCache.ny : blackMat,
+              z === 1 ? matCache.pz : blackMat,
+              z === -1 ? matCache.nz : blackMat
+            ]);
+            mesh.position.set(x * STEP, y * STEP, z * STEP);
+            mesh.userData.home = new THREE.Vector3(x * STEP, y * STEP, z * STEP);
+            mesh.userData.dir =
+              x === 0 && y === 0 && z === 0
+                ? new THREE.Vector3(0, 0, 1)
+                : new THREE.Vector3(x, y, z).normalize();
+            mesh.userData.tumble = new THREE.Vector3(
+              Math.random() - 0.5,
+              Math.random() - 0.5,
+              Math.random() - 0.5
+            ).normalize();
+            cubeGroup.add(mesh);
+            cubies.push(mesh);
+          }
+        }
+      }
+      cubeGroup.rotation.x = 0.35;
+      cubeGroup.scale.setScalar(st.baseCubeScale);
+
+      function startSlice() {
+        if (sliceAnimating || st.exploded) return;
+        const axes = ["x", "y", "z"],
+          axis = axes[Math.floor(Math.random() * 3)];
+        const layer = [-1, 0, 1][Math.floor(Math.random() * 3)],
+          dir = Math.random() < 0.5 ? 1 : -1;
+        const slice = cubies.filter((c) => Math.abs(c.position[axis] - layer * STEP) < STEP * 0.35);
+        if (!slice.length) return;
+        sliceAnimating = true;
+        animSlice = slice;
+        animAxis = axis;
+        animAngle = dir * Math.PI / 2;
+        animT0 = performance.now();
+        animStartPos = slice.map((c) => c.position.clone());
+        animStartQuat = slice.map((c) => c.quaternion.clone());
+      }
+
+      function updateSlice() {
+        if (!sliceAnimating) return;
+        const t = Math.min((performance.now() - animT0) / animDur, 1);
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        const axVec = new THREE.Vector3(
+          animAxis === "x" ? 1 : 0,
+          animAxis === "y" ? 1 : 0,
+          animAxis === "z" ? 1 : 0
+        );
+        const rotQ = new THREE.Quaternion().setFromAxisAngle(axVec, animAngle * e);
+        for (let i = 0; i < animSlice.length; i++) {
+          animSlice[i].position.copy(animStartPos[i].clone().applyQuaternion(rotQ));
+          animSlice[i].quaternion.copy(rotQ.clone().multiply(animStartQuat[i]));
+        }
+        if (t >= 1) {
+          for (const c of animSlice) {
+            c.position.x = Math.round(c.position.x / STEP) * STEP;
+            c.position.y = Math.round(c.position.y / STEP) * STEP;
+            c.position.z = Math.round(c.position.z / STEP) * STEP;
+          }
+          sliceAnimating = false;
+        }
+      }
+
+      st.startSlice = startSlice;
+      st.sliceInterval = setInterval(startSlice, 650);
+      st.raycaster = new THREE.Raycaster();
+      st.camera = camera;
+      st.cubies = cubies;
+
+      function loop() {
+        raf = requestAnimationFrame(loop);
+        if (!st.exploded) {
+          updateSlice();
+          rotY += 0.005;
+          cubeGroup.rotation.y = rotY;
+        }
+        const cgPos = new THREE.Vector3();
+        cubeGroup.getWorldPosition(cgPos);
+        innerLight.position.copy(cgPos);
+
+        if (st.shaking) {
+          const held = performance.now() - st.shakeStart,
+            ramp = Math.min(1, held / 1200),
+            jitter = 0.04 + ramp * 0.18;
+          cubeGroup.position.x = (Math.random() - 0.5) * jitter * 2;
+          cubeGroup.position.y = (Math.random() - 0.5) * jitter * 2;
+          cubeGroup.rotation.z = (Math.random() - 0.5) * ramp * 0.12;
+          cubeGroup.scale.setScalar(1 + 0.15 * Math.min(1, held / 400));
+          if (Math.random() < ramp * 0.35) {
+            const tgt = cubies[Math.floor(Math.random() * cubies.length)];
+            const mats = Array.isArray(tgt.material) ? tgt.material : [tgt.material];
+            mats.forEach((m) => {
+              m.emissiveIntensity = 3;
+              setTimeout(() => {
+                try {
+                  m.emissiveIntensity = 0;
+                } catch (_) {}
+              }, 60);
+            });
+          }
+          innerLight.intensity = ramp * 8;
+          innerLight.distance = 3 + ramp * 10;
+        } else if (!st.exploded) {
+          cubeGroup.position.x += (0 - cubeGroup.position.x) * 0.2;
+          cubeGroup.position.y += (0 - cubeGroup.position.y) * 0.2;
+          cubeGroup.scale.setScalar(st.baseCubeScale || 1);
+          innerLight.intensity *= 0.85;
+        }
+
+        if (st.exploding) {
+          const t = Math.min(1, (performance.now() - st.explodeStart) / 900);
+          const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          cubeGroup.position.set(0, 0, 0);
+          cubeGroup.rotation.z = 0;
+          cubeGroup.scale.setScalar(1);
+          innerLight.intensity = t < 0.1 ? 20 : Math.max(0, 20 * (1 - (t - 0.1) / 0.9));
+          innerLight.distance = 5 + e * 18;
+          bloomSphere.scale.setScalar(0.1 + e * 28);
+          bloomMat.uniforms.uOpacity.value = 0;
+          for (let i = 0; i < cubies.length; i++) {
+            const c = cubies[i];
+            c.position.copy(c.userData.home.clone().add(c.userData.dir.clone().multiplyScalar(e * 38)));
+            const spin = e * Math.PI * 2;
+            c.quaternion.setFromEuler(
+              new THREE.Euler(
+                spin * c.userData.tumble.x,
+                spin * c.userData.tumble.y,
+                spin * c.userData.tumble.z
+              )
+            );
+          }
+          if (t >= 1) {
+            st.exploding = false;
+            bloomMat.uniforms.uOpacity.value = 0;
+          }
+        }
+        renderer.render(scene, camera);
+      }
+      loop();
+
+      const onResize = () => {
+        const W2 = window.innerWidth, H2 = window.innerHeight;
+        camera.aspect = W2 / H2;
+        camera.position.set(0, 0, getResponsiveCameraZ(W2, H2));
+        camera.updateProjectionMatrix();
+        renderer.setSize(W2, H2);
+        cubeGroup.scale.setScalar(getResponsiveCubeScale(W2, H2));
+      };
+      window.addEventListener("resize", onResize);
+      st.cleanup = () => {
+        window.removeEventListener("resize", onResize);
+        clearInterval(st.sliceInterval);
+        cancelAnimationFrame(raf);
+        renderer.dispose();
+        const el2 = mountRef.current;
+        if (el2 && el2.contains(renderer.domElement)) el2.removeChild(renderer.domElement);
+      };
+    }
+
+    loadThree();
+    return () => {
+      st.cleanup?.();
+    };
+  }, []);
+
+  const startHold = useCallback((e) => {
+    e.preventDefault();
+    const st = stateRef.current;
+    if (st.exploded || !st.raycaster || !st.camera || !st.cubies) return;
+    const rect = mountRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const mouse = new window.THREE.Vector2(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1
+    );
+    st.raycaster.setFromCamera(mouse, st.camera);
+    const hits = st.raycaster.intersectObjects(st.cubies);
+    if (!hits.length) return;
+    isHolding.current = true;
+    st.shaking = true;
+    st.shakeStart = st.holdStartTime = performance.now();
+    st.charged = false;
+    clearInterval(st.sliceInterval);
+    holdTimer.current = setTimeout(() => {
+      st.charged = true;
+    }, 800);
+  }, []);
+
+  const endHold = useCallback(() => {
+    const st = stateRef.current;
+    if (!isHolding.current) return;
+    isHolding.current = false;
+    clearTimeout(holdTimer.current);
+    const heldMs = performance.now() - (st.holdStartTime || 0);
+    if (st.charged || heldMs < 300) {
+      st.shaking = false;
+      st.charged = false;
+      st.exploding = true;
+      st.explodeStart = performance.now();
+      st.exploded = true;
+      onExplode();
+    } else {
+      st.shaking = false;
+      st.charged = false;
+      st.sliceInterval = setInterval(st.startSlice, 650);
+    }
+  }, [onExplode]);
+
+  return (
+    <div
+      ref={mountRef}
+      onMouseDown={startHold}
+      onMouseUp={endHold}
+      onMouseLeave={endHold}
+      onTouchStart={startHold}
+      onTouchEnd={endHold}
+      style={{
+        position: "absolute",
+        inset: 0,
+        top: "9%",
+        zIndex: 100,
+        cursor: "none",
+        userSelect: "none",
+        WebkitUserSelect: "none"
+      }}
+      data-cube-overlay="true"
+    />
+  );
+}
+
 function Game2048({ C, onClose }) {
   const tileSize = Math.min(76, Math.floor((Math.min(window.innerWidth, 520) - 88) / 4));
   const CELL = Math.max(5, Math.floor(tileSize * 0.08));
@@ -336,9 +725,18 @@ function Game2048({ C, onClose }) {
   );
 }
 
-export function ArcadeSection({ C }) {
+export function ArcadeSection({ C, darkMode }) {
   const { ref, inView } = useInView(0.1);
   const [playing, setPlaying] = useState(false);
+  const [phase, setPhase] = useState("idle");
+  const [isMobile, setIsMobile] = useState(false);
+  const [cardsVisible, setCardsVisible] = useState(false);
+  const [showCube, setShowCube] = useState(true);
+  const [bgActive, setBgActive] = useState(false);
+  const [headingAnim, setHeadingAnim] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
+
+  const gridRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.style.overflowY = playing ? "hidden" : "";
@@ -346,6 +744,79 @@ export function ArcadeSection({ C }) {
       document.documentElement.style.overflowY = "";
     };
   }, [playing]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 700);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const handleExplode = useCallback(() => {
+    setHeadingAnim("up");
+    setBgActive(true);
+    setIsClosing(false);
+    setTimeout(() => {
+      setPhase("grid");
+      setShowCube(false);
+    }, 600);
+    setTimeout(() => setCardsVisible(true), 750);
+  }, []);
+
+  const handleCollapse = useCallback(() => {
+    setIsClosing(true);
+    setCardsVisible(false);
+    setHeadingAnim("down");
+    setBgActive(false);
+    document.documentElement.style.overflowY = "hidden";  // lock during transition
+
+    setTimeout(() => {
+      setPhase("idle");
+      setShowCube(true);
+      setIsClosing(false);
+      document.documentElement.style.overflowY = "";  // unlock after
+    }, 750);
+  }, []);
+
+  useEffect(() => {
+    if (phase !== "grid" || !cardsVisible) return;
+    let scrollStart = window.scrollY;
+    let settled = false;
+
+    const settleTimer = setTimeout(() => {
+      scrollStart = window.scrollY;
+      settled = true;
+    }, 1000);
+
+    const onScroll = () => {
+      if (!settled) return;
+      const delta = Math.abs(window.scrollY - scrollStart);
+      if (delta > 60) handleCollapse();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(settleTimer);
+    };
+  }, [phase, cardsVisible, handleCollapse]);
+
+  useEffect(() => {
+    if (phase !== "grid" || !cardsVisible) return;
+
+    const onClick = (e) => {
+      if (gridRef.current && !gridRef.current.contains(e.target)) handleCollapse();
+    };
+
+    const timer = setTimeout(() => {
+      window.addEventListener("click", onClick);
+    }, 800);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("click", onClick);
+    };
+  }, [phase, cardsVisible, handleCollapse]);
 
   const games = [
     { name: "2048", icon: "🎲", desc: "Merge tiles, chase the 2048 block.", color: C.accent },
@@ -363,20 +834,50 @@ export function ArcadeSection({ C }) {
         background: "transparent",
         minHeight: "100vh",
         display: "flex",
-        alignItems: "center",
+        flexDirection: "column",
+        justifyContent: phase === "grid" || isClosing ? "flex-start" : "center",
+        alignItems: "stretch",
+        paddingTop: "clamp(96px, 8vw, 140px)",
         position: "relative",
         overflow: "hidden"
       }}
     >
+      <div
+        style={{
+          position: "fixed",
+          left: "50%",
+          top: "50%",
+          width: "100vmax",
+          height: "100vmax",
+          borderRadius: "50%",
+          background: darkMode
+            ? `radial-gradient(circle, ${C.accent}55 0%, ${C.accent}22 28%, rgba(7,11,20,0.92) 62%, ${C.bg} 100%)`
+            : `radial-gradient(circle, ${C.accent}30 0%, ${C.accent}12 28%, rgba(255,255,255,0.78) 62%, ${C.bg} 100%)`,
+          transform: `translate(-50%,-50%) scale(${bgActive ? 3.0 : 0})`,
+          opacity: bgActive ? 1 : 0,
+          transition: bgActive
+            ? "transform 1.4s cubic-bezier(0.2,0,0.2,1), opacity 0.15s ease-in"
+            : "transform 0.6s cubic-bezier(0.4,0,1,1), opacity 0.5s ease-out",
+          willChange: "transform",
+          zIndex: 997,
+          pointerEvents: "none"
+        }}
+      />
+
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
         <span style={{ fontFamily: "system-ui", fontWeight: 900, fontSize: "20vw", color: C.accent, opacity: 0.02, userSelect: "none" }}>PLAY</span>
       </div>
+
+      {!isMobile && showCube && !isClosing && inView && phase === "idle" && <RubiksCube onExplode={handleExplode} />}
 
       <div
         style={{
           maxWidth: "clamp(1120px, 78vw, 1400px)",
           margin: "0 auto",
-          width: "100%"
+          width: "100%",
+          position: "relative",
+          zIndex: 1000,
+          pointerEvents: "none"
         }}
       >
         <div
@@ -404,7 +905,10 @@ export function ArcadeSection({ C }) {
               fontWeight: 800,
               letterSpacing: "-0.02em",
               margin: "0 0 10px",
-              color: C.textPrimary
+              color: C.textPrimary,
+              transform: headingAnim === "up" ? "translateY(-10px)" : "translateY(0)",
+              transition: "transform 0.55s cubic-bezier(0.22,1,0.36,1)",
+              willChange: "transform"
             }}
           >
             Need a{" "}
@@ -427,69 +931,239 @@ export function ArcadeSection({ C }) {
         </div>
 
         <div
-          className="arcade-cards-grid"
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: "clamp(16px, 1.4vw, 22px)"
+            overflow: "hidden",
+            maxHeight: !isMobile && showCube && phase === "idle" ? "520px" : "0px",
+            opacity: !isMobile && showCube && phase === "idle" ? 1 : 0,
+            transition: "max-height 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease"
           }}
         >
-          {games.map((g, i) => (
+          <div
+            style={{
+              position: "relative",
+              height: "clamp(320px, 34vw, 500px)"
+            }}
+          >
             <div
-              key={g.name}
-              onClick={() => g.name === "2048" && setPlaying(true)}
-              data-magnetic
-              className="arcade-card-inner"
-              style={mkPanel(C, {
-                padding: "clamp(28px, 1.8vw, 34px)",
-                cursor: "pointer",
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: "clamp(10px, 0.9vw, 14px)",
-                transition: "all 0.3s",
-                opacity: inView ? 1 : 0,
-                transform: inView ? "none" : "translateY(20px)",
-                transitionDelay: `${i * 0.1}s`
-              })}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = g.color + "50";
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow = `0 8px 40px ${g.color}20`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = C.border;
-                e.currentTarget.style.transform = "none";
-                e.currentTarget.style.boxShadow = "none";
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "clamp(200px, 26vw, 360px)",
+                transform: "translateX(-50%)",
+                display: "flex",
+                alignItems: "center",
+                gap: "clamp(10px, 0.8vw, 14px)",
+                fontFamily: "monospace",
+                fontSize: "clamp(15px, 1vw, 18px)",
+                color: C.textSecondary,
+                justifyContent: "center",
+                paddingBottom: 8,
+                textShadow: `0 0 20px ${C.bg}, 0 0 40px ${C.bg}`,
+                whiteSpace: "nowrap"
               }}
             >
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${g.color},${g.color}50)` }} />
-              <div className="arcade-card-icon" style={{ fontSize: "clamp(52px, 3.2vw, 64px)", marginBottom: "clamp(14px, 1vw, 18px)" }}>
-                {g.icon}
-              </div>
-              <h3 style={{ fontFamily: "system-ui", fontWeight: 800, fontSize: "clamp(20px, 1.5vw, 26px)", color: C.textPrimary, marginBottom: 10 }}>
-                {g.name}
-              </h3>
-              <p style={{ fontFamily: "monospace", fontSize: "clamp(13px, 0.88vw, 15px)", color: C.textSecondary, marginBottom: "clamp(20px, 1.5vw, 24px)", lineHeight: 1.7 }}>
-                {g.desc}
-              </p>
-              <div
+              <span
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "clamp(9px, 0.75vw, 12px) clamp(16px, 1.1vw, 20px)",
-                  background: g.color + "18",
-                  border: `1px solid ${g.color}40`,
-                  borderRadius: 6,
-                  fontFamily: "monospace",
-                  fontSize: "clamp(11px, 0.8vw, 13px)",
-                  color: g.color
+                  color: C.accent,
+                  animation: "cubePulse 1.8s ease-in-out infinite",
+                  fontSize: "clamp(18px, 1.2vw, 22px)"
                 }}
               >
-                {g.name === "2048" ? "▶ Play Now" : "Coming soon"}
-              </div>
+                ◆
+              </span>
+              Hold the cube to charge it up, release to reveal arcade
             </div>
-          ))}
+          </div>
+        </div>
+
+        {isMobile && (
+          <div
+            className="arcade-cards-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: "clamp(16px, 1.4vw, 22px)",
+              pointerEvents: "auto"
+            }}
+          >
+            {games.map((g, i) => (
+              <div
+                key={g.name}
+                onClick={() => g.name === "2048" && setPlaying(true)}
+                data-magnetic
+                className="arcade-card-inner"
+                style={mkPanel(C, {
+                  padding: "clamp(28px, 1.8vw, 34px)",
+                  cursor: "pointer",
+                  position: "relative",
+                  overflow: "hidden",
+                  borderRadius: "clamp(10px, 0.9vw, 14px)",
+                  transition: "all 0.3s",
+                  opacity: inView ? 1 : 0,
+                  transform: inView ? "none" : "translateY(20px)",
+                  transitionDelay: `${i * 0.1}s`
+                })}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = g.color + "50";
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow = `0 8px 40px ${g.color}20`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = C.border;
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${g.color},${g.color}50)` }} />
+                <div className="arcade-card-icon" style={{ fontSize: "clamp(52px, 3.2vw, 64px)", marginBottom: "clamp(14px, 1vw, 18px)" }}>
+                  {g.icon}
+                </div>
+                <h3 style={{ fontFamily: "system-ui", fontWeight: 800, fontSize: "clamp(20px, 1.5vw, 26px)", color: C.textPrimary, marginBottom: 10 }}>
+                  {g.name}
+                </h3>
+                <p style={{ fontFamily: "monospace", fontSize: "clamp(13px, 0.88vw, 15px)", color: C.textSecondary, marginBottom: "clamp(20px, 1.5vw, 24px)", lineHeight: 1.7 }}>
+                  {g.desc}
+                </p>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "clamp(9px, 0.75vw, 12px) clamp(16px, 1.1vw, 20px)",
+                    background: g.color + "18",
+                    border: `1px solid ${g.color}40`,
+                    borderRadius: 6,
+                    fontFamily: "monospace",
+                    fontSize: "clamp(11px, 0.8vw, 13px)",
+                    color: g.color
+                  }}
+                >
+                  {g.name === "2048" ? "▶ Play Now" : "Coming soon"}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div
+          ref={gridRef}
+          style={{
+            overflow: "hidden",
+            maxHeight: !isMobile && (phase === "grid" || isClosing) ? "1200px" : "0px",
+            opacity: !isMobile && phase === "grid" && !isClosing ? 1 : 0,
+            transform:
+              !isMobile && phase === "grid" && !isClosing
+                ? "translateY(0) scale(1)"
+                : "translateY(24px) scale(0.98)",
+            transition:
+              "max-height 0.75s cubic-bezier(0.22,1,0.36,1), opacity 0.45s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)",
+            pointerEvents: phase === "grid" && !isClosing ? "auto" : "none"
+          }}
+        >
+          <div
+            className="arcade-cards-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: "clamp(16px, 1.4vw, 22px)"
+            }}
+          >
+            {games.map((g, i) => (
+              <div
+                key={g.name}
+                onClick={() => g.name === "2048" && setPlaying(true)}
+                data-magnetic
+                className="arcade-card-inner"
+                style={mkPanel(C, {
+                  padding: "clamp(28px, 1.8vw, 34px)",
+                  cursor: "pointer",
+                  position: "relative",
+                  overflow: "hidden",
+                  borderRadius: "clamp(10px, 0.9vw, 14px)",
+                  transition: "all 0.3s",
+                  opacity: cardsVisible ? 1 : 0,
+                  transform: cardsVisible ? "none" : "translateY(20px)",
+                  transitionDelay: `${i * 0.1}s`
+                })}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = g.color + "50";
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow = `0 8px 40px ${g.color}20`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = C.border;
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${g.color},${g.color}50)` }} />
+                <div className="arcade-card-icon" style={{ fontSize: "clamp(52px, 3.2vw, 64px)", marginBottom: "clamp(14px, 1vw, 18px)" }}>
+                  {g.icon}
+                </div>
+                <h3 style={{ fontFamily: "system-ui", fontWeight: 800, fontSize: "clamp(20px, 1.5vw, 26px)", color: C.textPrimary, marginBottom: 10 }}>
+                  {g.name}
+                </h3>
+                <p style={{ fontFamily: "monospace", fontSize: "clamp(13px, 0.88vw, 15px)", color: C.textSecondary, marginBottom: "clamp(20px, 1.5vw, 24px)", lineHeight: 1.7 }}>
+                  {g.desc}
+                </p>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "clamp(9px, 0.75vw, 12px) clamp(16px, 1.1vw, 20px)",
+                    background: g.color + "18",
+                    border: `1px solid ${g.color}40`,
+                    borderRadius: 6,
+                    fontFamily: "monospace",
+                    fontSize: "clamp(11px, 0.8vw, 13px)",
+                    color: g.color
+                  }}
+                >
+                  {g.name === "2048" ? "▶ Play Now" : "Coming soon"}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "clamp(16px, 1.2vw, 20px)" }}>
+            <button
+              onClick={handleCollapse}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "clamp(12px, 0.9vw, 15px) clamp(24px, 1.8vw, 30px)",
+                background: C.panel,
+                border: `1px solid ${C.accent}55`,
+                borderRadius: "clamp(10px, 0.8vw, 12px)",
+                color: C.textPrimary,
+                fontFamily: "monospace",
+                fontSize: "clamp(12px, 0.8vw, 14px)",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: `0 8px 22px ${C.accent}18`,
+                opacity: cardsVisible ? 1 : 0,
+                transform: cardsVisible ? "none" : "translateY(8px)",
+                transition:
+                  "opacity 0.4s 0.5s, transform 0.4s 0.5s, border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = C.accent;
+                e.currentTarget.style.color = C.accent;
+                e.currentTarget.style.background = C.accent + "10";
+                e.currentTarget.style.boxShadow = `0 10px 26px ${C.accent}28`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = C.accent + "55";
+                e.currentTarget.style.color = C.textPrimary;
+                e.currentTarget.style.background = C.panel;
+                e.currentTarget.style.boxShadow = `0 8px 22px ${C.accent}18`;
+              }}
+            >
+              ← Collapse back to cube
+            </button>
+          </div>
         </div>
       </div>
 
@@ -521,6 +1195,10 @@ export function ArcadeSection({ C }) {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes cubePulse { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+      `}</style>
     </section>
   );
 }
