@@ -161,11 +161,14 @@ export function NavBar({ onMenu, onTerminal, C, darkMode, toggleDark }) {
             borderRadius:999,
             border:`1px solid ${darkMode ? "rgba(255,255,255,0.08)" : `${C.green}30`}`,
             background: darkMode
-              ? "linear-gradient(90deg, #0f172a, #1e293b)"
+              ? "linear-gradient(90deg, #0b1220, #172033)"
               : `linear-gradient(90deg, ${C.green}10, ${C.green}08)`,
+            boxShadow: darkMode
+              ? "inset 0 1px 2px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.03)"
+              : "none",
             cursor:"pointer",
             padding:0,
-            transition:"background 0.3s ease, border-color 0.3s ease",
+            transition:"background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
             overflow:"hidden"
           }}
         >
@@ -181,8 +184,8 @@ export function NavBar({ onMenu, onTerminal, C, darkMode, toggleDark }) {
               pointerEvents:"none"
             }}
           >
-            <span>☀️</span>
-            <span>🌙</span>
+            <span style={{opacity: darkMode ? 0.55 : 1}}>☀️</span>
+            <span style={{opacity: darkMode ? 1 : 0.55}}>🌙</span>
           </span>
           <span
             style={{
@@ -192,10 +195,17 @@ export function NavBar({ onMenu, onTerminal, C, darkMode, toggleDark }) {
               width:36,
               height:28,
               borderRadius:999,
-              background: darkMode ? "rgba(30, 41, 59, 0.95)" : "rgba(255, 255, 255, 0.95)",
-              boxShadow:"0 6px 14px rgba(0,0,0,0.12)",
+              background: darkMode
+                ? "linear-gradient(180deg, rgba(71, 85, 105, 0.98), rgba(30, 41, 59, 0.98))"
+                : "rgba(255, 255, 255, 0.95)",
+              border: darkMode
+                ? "1px solid rgba(148, 163, 184, 0.28)"
+                : "1px solid rgba(255,255,255,0.65)",
+              boxShadow: darkMode
+                ? "0 6px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)"
+                : "0 6px 14px rgba(0,0,0,0.12)",
               transform: darkMode ? "translateX(40px)" : "translateX(0)",
-              transition:"transform 0.32s cubic-bezier(.2,.8,.2,1), background 0.3s ease"
+              transition:"transform 0.32s cubic-bezier(.2,.8,.2,1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease"
             }}
           />
         </button>
