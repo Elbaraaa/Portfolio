@@ -14,7 +14,7 @@ function ProjectCard({ project, onClick, C }) {
       onMouseLeave={() => setHov(false)}
       data-magnetic
       style={mkPanel(C, {
-        padding: "clamp(24px, 1.6vw, 30px)",
+        padding: "clamp(18px, 1.15vw, 24px)",
         cursor: "pointer",
         position: "relative",
         overflow: "hidden",
@@ -22,7 +22,8 @@ function ProjectCard({ project, onClick, C }) {
         borderColor: hov ? project.accent + "50" : C.border,
         boxShadow: hov ? `0 0 30px ${project.accent}15` : "none",
         transition: "transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
-        transform: hov ? "translateY(-6px) scale(1.02)" : "translateY(0) scale(1)"
+        transform: hov ? "translateY(-6px) scale(1.02)" : "translateY(0) scale(1)",
+        minWidth: 0
       })}
     >
       <div
@@ -38,13 +39,20 @@ function ProjectCard({ project, onClick, C }) {
         }}
       />
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(12px, 1vw, 16px)" }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: "clamp(10px, 0.8vw, 14px)",
+          marginBottom: "clamp(10px, 0.8vw, 14px)"
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
             <div
               style={{
-                width: "clamp(5px, 0.4vw, 7px)",
-                height: "clamp(5px, 0.4vw, 7px)",
+                width: "clamp(5px, 0.35vw, 6px)",
+                height: "clamp(5px, 0.35vw, 6px)",
                 borderRadius: "50%",
                 background: project.status === "shipped" ? C.green : C.orange
               }}
@@ -52,7 +60,7 @@ function ProjectCard({ project, onClick, C }) {
             <span
               style={{
                 fontFamily: "monospace",
-                fontSize: "clamp(10px, 0.7vw, 12px)",
+                fontSize: "clamp(10px, 0.68vw, 11px)",
                 color: project.status === "shipped" ? C.green : C.orange,
                 textTransform: "uppercase"
               }}
@@ -64,7 +72,7 @@ function ProjectCard({ project, onClick, C }) {
           <h3
             style={{
               fontFamily: "system-ui",
-              fontSize: "clamp(18px, 1.25vw, 22px)",
+              fontSize: "clamp(17px, 1.05vw, 20px)",
               fontWeight: 700,
               color: C.textPrimary,
               margin: 0
@@ -76,9 +84,9 @@ function ProjectCard({ project, onClick, C }) {
           <div
             style={{
               fontFamily: "monospace",
-              fontSize: "clamp(11px, 0.78vw, 13px)",
+              fontSize: "clamp(10.5px, 0.72vw, 12px)",
               color: C.textDim,
-              marginTop: 3
+              marginTop: 2
             }}
           >
             {project.subtitle}
@@ -88,9 +96,10 @@ function ProjectCard({ project, onClick, C }) {
         <span
           style={{
             color: C.textDim,
-            fontSize: "clamp(16px, 1vw, 20px)",
+            fontSize: "clamp(15px, 0.9vw, 18px)",
             opacity: hov ? 1 : 0,
-            transition: "opacity 0.2s"
+            transition: "opacity 0.2s",
+            flex: "0 0 auto"
           }}
         >
           ↗
@@ -101,12 +110,12 @@ function ProjectCard({ project, onClick, C }) {
         style={{
           display: "inline-block",
           fontFamily: "monospace",
-          fontSize: "clamp(10px, 0.7vw, 12px)",
-          padding: "clamp(3px, 0.3vw, 5px) clamp(8px, 0.8vw, 10px)",
+          fontSize: "clamp(9.5px, 0.66vw, 11px)",
+          padding: "clamp(3px, 0.24vw, 4px) clamp(7px, 0.65vw, 9px)",
           border: `1px solid ${project.accent}30`,
           color: project.accent,
           borderRadius: 4,
-          marginBottom: "clamp(12px, 1vw, 16px)"
+          marginBottom: "clamp(10px, 0.8vw, 14px)"
         }}
       >
         {project.category}
@@ -115,22 +124,22 @@ function ProjectCard({ project, onClick, C }) {
       <p
         style={{
           color: C.textSecondary,
-          fontSize: "clamp(13.5px, 0.95vw, 16px)",
-          lineHeight: 1.75,
-          margin: "0 0 clamp(14px, 1vw, 18px)"
+          fontSize: "clamp(13px, 0.86vw, 15px)",
+          lineHeight: 1.7,
+          margin: "0 0 clamp(12px, 0.9vw, 16px)"
         }}
       >
         {project.description}
       </p>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "clamp(5px, 0.5vw, 7px)" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "clamp(5px, 0.45vw, 6px)" }}>
         {project.tech.slice(0, 4).map((t) => (
           <span
             key={t}
             style={{
               fontFamily: "monospace",
-              fontSize: "clamp(10px, 0.7vw, 12px)",
-              padding: "clamp(3px, 0.25vw, 4px) clamp(7px, 0.6vw, 9px)",
+              fontSize: "clamp(9.5px, 0.66vw, 11px)",
+              padding: "clamp(3px, 0.22vw, 4px) clamp(6px, 0.5vw, 8px)",
               background: C.bg,
               border: `1px solid ${C.border}50`,
               borderRadius: 4,
@@ -387,7 +396,7 @@ export function ProjectsSection({ C }) {
               fontSize: "clamp(32px, 4.2vw, 54px)",
               fontWeight: 800,
               letterSpacing: "-0.02em",
-              margin: "0 0 clamp(32px, 2.4vw, 44px)",
+              margin: "0 0 clamp(28px, 2vw, 40px)",
               color: C.textPrimary
             }}
           >
@@ -399,7 +408,7 @@ export function ProjectsSection({ C }) {
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: "clamp(16px, 1.4vw, 22px)"
+            gap: "clamp(12px, 1vw, 18px)"
           }}
           className="projects-grid"
         >
