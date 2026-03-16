@@ -52,7 +52,7 @@ export function ExperienceSection({ C }) {
               fontSize: "clamp(32px, 4.2vw, 54px)",
               fontWeight: 800,
               letterSpacing: "-0.02em",
-              margin: "0 0 clamp(34px, 2.6vw, 48px)",
+              margin: "0 0 clamp(30px, 2.2vw, 42px)",
               color: C.textPrimary
             }}
           >
@@ -65,17 +65,18 @@ export function ExperienceSection({ C }) {
             key={exp.id}
             style={{
               display: "flex",
-              gap: "clamp(24px, 1.8vw, 32px)",
+              gap: "clamp(18px, 1.4vw, 26px)",
               opacity: inView ? 1 : 0,
               transform: inView ? "none" : "translateX(24px)",
-              transition: `all 0.6s ${0.15 + i * 0.12}s`
+              transition: `all 0.6s ${0.15 + i * 0.12}s`,
+              minWidth: 0
             }}
           >
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "0 0 auto" }}>
               <div
                 style={{
-                  width: "clamp(42px, 2.6vw, 52px)",
-                  height: "clamp(42px, 2.6vw, 52px)",
+                  width: "clamp(38px, 2.2vw, 46px)",
+                  height: "clamp(38px, 2.2vw, 46px)",
                   borderRadius: "50%",
                   border: `2px solid ${exp.status === "active" ? C.accent + "80" : C.border}`,
                   background: exp.status === "active" ? `${C.accent}12` : C.surface,
@@ -86,7 +87,7 @@ export function ExperienceSection({ C }) {
                   position: "relative"
                 }}
               >
-                <span style={{ fontSize: "clamp(14px, 0.95vw, 17px)" }}>
+                <span style={{ fontSize: "clamp(13px, 0.85vw, 15px)" }}>
                   {exp.status === "active" ? "💼" : "✓"}
                 </span>
 
@@ -96,8 +97,8 @@ export function ExperienceSection({ C }) {
                       position: "absolute",
                       top: -2,
                       right: -2,
-                      width: "clamp(9px, 0.7vw, 12px)",
-                      height: "clamp(9px, 0.7vw, 12px)",
+                      width: "clamp(8px, 0.6vw, 10px)",
+                      height: "clamp(8px, 0.6vw, 10px)",
                       borderRadius: "50%",
                       background: C.green,
                       border: `2px solid ${C.bg}`
@@ -113,7 +114,7 @@ export function ExperienceSection({ C }) {
                     flex: 1,
                     background: `linear-gradient(to bottom,${C.border},transparent)`,
                     marginTop: "clamp(8px, 0.8vw, 12px)",
-                    minHeight: "clamp(42px, 4vw, 64px)"
+                    minHeight: "clamp(36px, 3.2vw, 54px)"
                   }}
                 />
               )}
@@ -121,16 +122,17 @@ export function ExperienceSection({ C }) {
 
             <div
               style={{
-                paddingBottom: "clamp(32px, 2.4vw, 44px)",
+                paddingBottom: "clamp(26px, 2vw, 38px)",
                 flex: 1,
                 minWidth: 0
               }}
             >
               <div
                 style={mkPanel(C, {
-                  padding: "clamp(22px, 1.6vw, 30px)",
+                  padding: "clamp(18px, 1.25vw, 24px)",
                   borderRadius: "clamp(10px, 0.9vw, 14px)",
-                  boxShadow: `0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)`
+                  boxShadow: `0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)`,
+                  minWidth: 0
                 })}
               >
                 <div
@@ -139,7 +141,8 @@ export function ExperienceSection({ C }) {
                     justifyContent: "space-between",
                     flexWrap: "wrap",
                     gap: "clamp(8px, 0.8vw, 12px)",
-                    marginBottom: "clamp(10px, 0.8vw, 14px)"
+                    marginBottom: "clamp(8px, 0.7vw, 12px)",
+                    minWidth: 0
                   }}
                 >
                   <div style={{ minWidth: 0 }}>
@@ -147,9 +150,9 @@ export function ExperienceSection({ C }) {
                       style={{
                         fontFamily: "system-ui",
                         fontWeight: 700,
-                        fontSize: "clamp(17px, 1.2vw, 21px)",
+                        fontSize: "clamp(16px, 1.05vw, 19px)",
                         color: C.textPrimary,
-                        margin: "0 0 4px"
+                        margin: "0 0 3px"
                       }}
                     >
                       {exp.role}
@@ -157,7 +160,7 @@ export function ExperienceSection({ C }) {
                     <span
                       style={{
                         fontFamily: "monospace",
-                        fontSize: "clamp(11px, 0.8vw, 13px)",
+                        fontSize: "clamp(10.5px, 0.72vw, 12px)",
                         color: C.accent
                       }}
                     >
@@ -169,7 +172,7 @@ export function ExperienceSection({ C }) {
                     <div
                       style={{
                         fontFamily: "monospace",
-                        fontSize: "clamp(10px, 0.75vw, 12px)",
+                        fontSize: "clamp(9.5px, 0.68vw, 11px)",
                         color: C.textDim
                       }}
                     >
@@ -187,8 +190,8 @@ export function ExperienceSection({ C }) {
                     >
                       <div
                         style={{
-                          width: "clamp(5px, 0.45vw, 7px)",
-                          height: "clamp(5px, 0.45vw, 7px)",
+                          width: "clamp(5px, 0.4vw, 6px)",
+                          height: "clamp(5px, 0.4vw, 6px)",
                           borderRadius: "50%",
                           background: exp.status === "active" ? C.green : C.textDim
                         }}
@@ -196,7 +199,7 @@ export function ExperienceSection({ C }) {
                       <span
                         style={{
                           fontFamily: "monospace",
-                          fontSize: "clamp(9px, 0.68vw, 11px)",
+                          fontSize: "clamp(9px, 0.62vw, 10px)",
                           color: exp.status === "active" ? C.green : C.textDim,
                           textTransform: "uppercase"
                         }}
@@ -210,22 +213,22 @@ export function ExperienceSection({ C }) {
                 <p
                   style={{
                     color: C.textSecondary,
-                    fontSize: "clamp(14px, 0.95vw, 16px)",
-                    lineHeight: 1.8,
-                    margin: "0 0 clamp(12px, 1vw, 16px)"
+                    fontSize: "clamp(13px, 0.86vw, 15px)",
+                    lineHeight: 1.72,
+                    margin: "0 0 clamp(10px, 0.85vw, 14px)"
                   }}
                 >
                   {exp.description}
                 </p>
 
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "clamp(5px, 0.5vw, 8px)" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "clamp(5px, 0.45vw, 7px)", minWidth: 0 }}>
                   {exp.tags.map((t) => (
                     <span
                       key={t}
                       style={{
                         fontFamily: "monospace",
-                        fontSize: "clamp(10px, 0.72vw, 12px)",
-                        padding: "clamp(3px, 0.25vw, 5px) clamp(7px, 0.6vw, 10px)",
+                        fontSize: "clamp(9.5px, 0.66vw, 11px)",
+                        padding: "clamp(3px, 0.22vw, 4px) clamp(6px, 0.5vw, 8px)",
                         background: C.bg,
                         border: `1px solid ${C.border}`,
                         borderRadius: 4,
