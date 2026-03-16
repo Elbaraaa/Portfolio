@@ -44,11 +44,10 @@ export function InteractiveBg({ C, isDark }) {
     }
 
     function initPineLayers() {
-      // Fixed pixel-based spacing so the trees keep their shape better across widths
       pineLayersRef.current = {
-        far: makePineLayer(H * 0.88, H * 0.16, 108, 10, 8, [0.82, 1.02]),
-        mid: makePineLayer(H * 0.91, H * 0.22, 128, 12, 10, [0.86, 1.08]),
-        front: makePineLayer(H * 0.95, H * 0.29, 154, 14, 12, [0.9, 1.14]),
+        far: makePineLayer(H * 0.9, H * 0.16, 108, 10, 8, [0.82, 1.02]),
+        mid: makePineLayer(H * 0.935, H * 0.22, 128, 12, 10, [0.86, 1.08]),
+        front: makePineLayer(H * 0.985, H * 0.29, 154, 14, 12, [0.9, 1.14]),
       };
     }
 
@@ -94,7 +93,6 @@ export function InteractiveBg({ C, isDark }) {
     window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("click", onClick);
 
-    // ---------------- DARK MODE DATA ----------------
     let darkPts = [];
     function initDarkParticles() {
       const N = 90;
@@ -118,7 +116,6 @@ export function InteractiveBg({ C, isDark }) {
       });
     }
 
-    // ---------------- LIGHT MODE DATA ----------------
     let lightParticles = [];
     function initLightParticles() {
       const N = 10;
@@ -144,7 +141,6 @@ export function InteractiveBg({ C, isDark }) {
       ctx.fillStyle = color;
 
       trees.forEach((t) => {
-        // tree body
         ctx.beginPath();
         ctx.moveTo(t.leftX, t.baseY);
         ctx.lineTo(t.peakX, t.peakY);
@@ -152,7 +148,6 @@ export function InteractiveBg({ C, isDark }) {
         ctx.closePath();
         ctx.fill();
 
-        // trunk
         ctx.fillRect(
           t.peakX - t.trunkW / 2,
           t.baseY - t.trunkH,
@@ -260,7 +255,6 @@ export function InteractiveBg({ C, isDark }) {
     function drawLightMode() {
       ctx.clearRect(0, 0, W, H);
 
-      // Base wash
       const bg = ctx.createLinearGradient(0, 0, 0, H);
       bg.addColorStop(0, "#F8F4EC");
       bg.addColorStop(0.45, "#F6F2E8");
@@ -268,7 +262,6 @@ export function InteractiveBg({ C, isDark }) {
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
 
-      // Sun glow
       const sunX = W * 0.78;
       const sunY = H * 0.16;
       const sun = ctx.createRadialGradient(
@@ -285,7 +278,6 @@ export function InteractiveBg({ C, isDark }) {
       ctx.fillStyle = sun;
       ctx.fillRect(0, 0, W, H);
 
-      // Left misty glow
       const leftGlow = ctx.createRadialGradient(
         W * 0.24,
         H * 0.36,
@@ -299,7 +291,6 @@ export function InteractiveBg({ C, isDark }) {
       ctx.fillStyle = leftGlow;
       ctx.fillRect(0, 0, W, H);
 
-      // Fog band through hero center
       const fog = ctx.createLinearGradient(0, H * 0.22, 0, H * 0.72);
       fog.addColorStop(0, "rgba(255,255,255,0)");
       fog.addColorStop(0.25, "rgba(255,255,255,0.22)");
@@ -309,35 +300,33 @@ export function InteractiveBg({ C, isDark }) {
       ctx.fillStyle = fog;
       ctx.fillRect(0, H * 0.12, W, H * 0.7);
 
-      // Far background fade
       const farGround = ctx.createLinearGradient(0, H * 0.62, 0, H);
       farGround.addColorStop(0, "rgba(223,230,216,0.0)");
       farGround.addColorStop(1, "rgba(223,230,216,0.9)");
       ctx.fillStyle = farGround;
       ctx.fillRect(0, H * 0.55, W, H * 0.45);
 
-      // Pine layers
       drawPineLayer(pineLayersRef.current.far, "#A7B8A9", 0.13);
       drawPineLayer(pineLayersRef.current.mid, "#6B8E78", 0.18);
       drawPineLayer(pineLayersRef.current.front, "#345C49", 0.24);
 
-      // Ground blend to merge tree bottoms
-      const treeBlend = ctx.createLinearGradient(0, H * 0.82, 0, H);
+      const treeBlend = ctx.createLinearGradient(0, H * 0.8, 0, H);
       treeBlend.addColorStop(0, "rgba(240,235,225,0)");
-      treeBlend.addColorStop(0.45, "rgba(241,236,226,0.65)");
-      treeBlend.addColorStop(1, "rgba(236,230,218,0.96)");
+      treeBlend.addColorStop(0.22, "rgba(241,236,226,0.28)");
+      treeBlend.addColorStop(0.5, "rgba(241,236,226,0.62)");
+      treeBlend.addColorStop(0.78, "rgba(238,232,220,0.88)");
+      treeBlend.addColorStop(1, "rgba(236,230,218,0.98)");
       ctx.fillStyle = treeBlend;
-      ctx.fillRect(0, H * 0.78, W, H * 0.22);
+      ctx.fillRect(0, H * 0.76, W, H * 0.24);
 
-      // Ground mist
-      const groundMist = ctx.createLinearGradient(0, H * 0.76, 0, H);
+      const groundMist = ctx.createLinearGradient(0, H * 0.74, 0, H);
       groundMist.addColorStop(0, "rgba(246,242,232,0)");
-      groundMist.addColorStop(0.3, "rgba(246,242,232,0.18)");
-      groundMist.addColorStop(1, "rgba(246,242,232,0.7)");
+      groundMist.addColorStop(0.22, "rgba(246,242,232,0.12)");
+      groundMist.addColorStop(0.48, "rgba(246,242,232,0.28)");
+      groundMist.addColorStop(1, "rgba(246,242,232,0.74)");
       ctx.fillStyle = groundMist;
-      ctx.fillRect(0, H * 0.7, W, H * 0.3);
+      ctx.fillRect(0, H * 0.68, W, H * 0.32);
 
-      // Ambient particles
       lightParticles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
@@ -361,10 +350,8 @@ export function InteractiveBg({ C, isDark }) {
         ctx.restore();
       });
 
-      // Falling interactive leaves
       updateAndDrawLeaves();
 
-      // Soft mouse glow
       const mx = mouse.current.x;
       const my = mouse.current.y;
       if (mx > -500 && my > -500) {
