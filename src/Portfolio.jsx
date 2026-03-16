@@ -42,6 +42,7 @@ export default function Portfolio() {
   useEffect(() => {
     let buf = "";
     const h = (e) => {
+      if (typeof e.key !== "string" || e.key.length !== 1) return;
       buf += e.key.toLowerCase();
       if (buf.length > 7) buf = buf.slice(-7);
       if (buf === "elbaraa") setTerminal(true);
