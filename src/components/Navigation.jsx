@@ -143,7 +143,7 @@ export function NavBar({ onMenu, onTerminal, C, darkMode, toggleDark }) {
   const [scrolled,setScrolled]=useState(false);
   useEffect(()=>{ const h=()=>setScrolled(window.scrollY>40); window.addEventListener("scroll",h,{passive:true}); return()=>window.removeEventListener("scroll",h); },[]);
   return (
-    <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:200,height:56,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 28px",background:scrolled?`${C.bg}E6`:"transparent",backdropFilter:scrolled?"blur(16px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"1px solid transparent",transition:"all 0.3s"}}>
+    <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:2000,height:56,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 28px",background:scrolled?`${C.bg}E6`:"transparent",backdropFilter:scrolled?"blur(16px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"1px solid transparent",transition:"all 0.3s"}}>
       <button onClick={()=>document.getElementById("hero").scrollIntoView({behavior:"smooth"})} style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",cursor:"pointer"}}>
         <div style={{width:26,height:26,border:`1px solid ${C.accent}50`,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",background:`${C.accent}08`}}>
           <div style={{width:8,height:8,background:`linear-gradient(135deg,${C.accent},${C.green})`,borderRadius:2}}/>
