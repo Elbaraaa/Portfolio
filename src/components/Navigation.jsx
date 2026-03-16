@@ -238,7 +238,7 @@ export function BackToTop({ goTo, C }) {
   const [visible,setVisible]=useState(false);
   useEffect(()=>{ const h=()=>setVisible(window.scrollY>200); window.addEventListener("scroll",h,{passive:true}); return()=>window.removeEventListener("scroll",h); },[]);
   return (
-    <button onClick={()=>goTo(0)} style={{position:"fixed",bottom:88,left:24,zIndex:2000,width:40,height:40,borderRadius:"50%",background:C.panel,border:`1px solid ${C.border}`,color:C.textSecondary,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(12px)",transition:"opacity 0.3s, transform 0.3s",pointerEvents:visible?"all":"none"}}
+    <button onClick={()=>goTo(0)} style={{position:"fixed",bottom:88,left:24,zIndex:1800,width:40,height:40,borderRadius:"50%",background:C.panel,border:`1px solid ${C.border}`,color:C.textSecondary,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(12px)",transition:"opacity 0.3s, transform 0.3s",pointerEvents:visible?"all":"none"}}
       onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent;e.currentTarget.style.color=C.accent;}}
       onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textSecondary;}}>↑</button>
   );
