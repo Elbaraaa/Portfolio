@@ -7,8 +7,8 @@ export const globalCSS = `
   @keyframes tilePop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
   @keyframes tileAppear{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
   *{box-sizing:border-box;margin:0;padding:0;cursor:none !important}
-  html{scroll-snap-type:y mandatory;overflow-y:scroll;scroll-behavior:smooth;overflow-x:hidden}
-  section{}
+  html{scroll-snap-type:y proximity;overflow-y:scroll;scroll-behavior:smooth;overflow-x:hidden}
+  section{scroll-snap-align:start}
   ::-webkit-scrollbar{width:4px}
   ::selection{background:rgba(35,77,59,0.18)}
   .grad-text{-webkit-background-clip:text !important;background-clip:text !important;-webkit-text-fill-color:transparent !important;color:transparent !important}
