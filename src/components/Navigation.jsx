@@ -46,7 +46,7 @@ export function SectionDots({ current, goTo, C }) {
 }
 
 export function MenuOverlay({ open, onClose, goTo, C }) {
-  const items=[{label:"About",idx:1,icon:"01",desc:"Who I am"},{label:"Projects",idx:2,icon:"02",desc:"Things I've shipped"},{label:"Experience",idx:3,icon:"03",desc:"Where I've worked"},{label:"Skills",idx:4,icon:"04",desc:"My tech stack"},{label:"Achievements",idx:5,icon:"05",desc:"Recognition"},{label:"Arcade",idx:6,icon:"06",desc:"Take a break 🎮"},{label:"Guestbook",idx:7,icon:"07",desc:"Leave your mark"},{label:"Hire Me",idx:8,icon:"08",desc:"Let's work together"},{label:"Contact",idx:9,icon:"09",desc:"Get in touch"}];
+  const items=[{label:"About",idx:1,icon:"01",desc:"Who I am"},{label:"Projects",idx:2,icon:"02",desc:"Things I've shipped"},{label:"Experience",idx:3,icon:"03",desc:"Where I've worked"},{label:"Skills",idx:4,icon:"04",desc:"My tech stack"},{label:"Achievements",idx:5,icon:"05",desc:"Recognition"},{label:"Arcade",idx:6,icon:"06",desc:"Take a break 🎮"},{label:"Guestbook",idx:7,icon:"07",desc:"Leave your mark"},{label:"Hire Me",idx:8,icon:"08",desc:"Let's work together"}];
   const touchStartY = useRef(null);
 
   const isDarkTheme = getIsDarkFromColor(C.bg);
