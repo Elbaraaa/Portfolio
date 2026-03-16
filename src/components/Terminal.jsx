@@ -13,33 +13,208 @@ const CMDS = {
 };
 
 export function Terminal({ onClose, C }) {
-  const [lines,setLines]=useState([{t:"sys",v:"elbaraa@portfolio — type 'help' to begin"}]);const [inp,setInp]=useState("");const endRef=useRef(null);
-  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[lines]);
-  useEffect(()=>{ const h=e=>{if(e.key==="Escape")onClose();}; window.addEventListener("keydown",h); return()=>window.removeEventListener("keydown",h); },[onClose]);
-  const run=()=>{
-    const cmd=inp.trim().toLowerCase();setLines(p=>[...p,{t:"in",v:inp.trim()}]);setInp("");
-    if(!cmd)return;const fn=CMDS[cmd];
-    if(!fn){setLines(p=>[...p,{t:"err",v:"Not found: "+cmd+". Try 'help'."}]);return;}
-    if(fn==="__clear__"){setLines([{t:"sys",v:"Cleared."}]);return;}
-    fn().split("\n").forEach((line,i)=>setTimeout(()=>setLines(p=>[...p,{t:"out",v:line}]),i*35));
+  const [lines, setLines] = useState([{ t: "sys", v: "elbaraa@portfolio — type 'help' to begin" }]);
+  const [inp, setInp] = useState("");
+  const endRef = useRef(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [lines]);
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+
+  // useEffect(() => {
+  //   const closeOnScroll = () => onClose();
+  //   window.addEventListener("wheel", closeOnScroll, { passive: true });
+  //   window.addEventListener("touchmove", closeOnScroll, { passive: true });
+
+  //   return () => {
+  //     window.removeEventListener("wheel", closeOnScroll);
+  //     window.removeEventListener("touchmove", closeOnScroll);
+  //   };
+  // }, [onClose]);
+
+  const run = () => {
+    const cmd = inp.trim().toLowerCase();
+    setLines((p) => [...p, { t: "in", v: inp.trim() }]);
+    setInp("");
+
+    if (!cmd) return;
+
+    const fn = CMDS[cmd];
+    if (!fn) {
+      setLines((p) => [...p, { t: "err", v: "Not found: " + cmd + ". Try 'help'." }]);
+      return;
+    }
+
+    if (fn === "__clear__") {
+      setLines([{ t: "sys", v: "Cleared." }]);
+      return;
+    }
+
+    fn().split("\n").forEach((line, i) =>
+      setTimeout(() => setLines((p) => [...p, { t: "out", v: line }]), i * 35)
+    );
   };
+
+  const isLight = C.bg && !String(C.bg).includes("#0") && !String(C.bg).includes("7,11,20");
+
+  const overlayBg = isLight
+    ? "rgba(244, 248, 243, 0.78)"
+    : "rgba(7,11,20,0.95)";
+
+  const terminalBodyBg = isLight
+    ? "linear-gradient(180deg, rgba(250,253,249,0.96), rgba(240,247,241,0.94))"
+    : "linear-gradient(180deg, rgba(7,11,20,0.96), rgba(11,18,30,0.94))";
+
+  const headerBg = isLight
+    ? "rgba(255,255,255,0.55)"
+    : "rgba(255,255,255,0.02)";
+
+  const contentBg = isLight
+    ? "rgba(255,255,255,0.18)"
+    : "transparent";
+
   return (
-    <div style={{position:"fixed",inset:0,zIndex:950,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={onClose}>
-      <div style={{position:"absolute",inset:0,background:"rgba(7,11,20,0.95)",backdropFilter:"blur(10px)"}}/>
-      <div onClick={e=>e.stopPropagation()} style={mkPanel(C,{position:"relative",width:"100%",maxWidth:560,padding:0,borderColor:C.green+"40",animation:"scaleIn 0.22s ease-out"})}>
-        <div style={{height:2,background:`linear-gradient(90deg,${C.green},${C.accent})`}}/>
-        <div style={{padding:"10px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div style={{display:"flex",gap:7}}>{["#FF5F57","#FFBD2E","#28C840"].map((c,i)=><div key={i} onClick={i===0?onClose:undefined} style={{width:11,height:11,borderRadius:"50%",background:c,cursor:i===0?"pointer":"default"}}/>)}</div>
-          <span style={{fontFamily:"monospace",fontSize:11,color:C.textDim}}>elbaraa@portfolio ~ zsh</span>
-          <span/>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1900,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: overlayBg,
+          backdropFilter: "blur(10px)"
+        }}
+      />
+
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={mkPanel(C, {
+          position: "relative",
+          width: "100%",
+          maxWidth: 560,
+          padding: 0,
+          borderColor: C.green + "40",
+          animation: "scaleIn 0.22s ease-out",
+          background: terminalBodyBg,
+          boxShadow: isLight
+            ? "0 20px 60px rgba(35,77,59,0.16)"
+            : "0 20px 60px rgba(0,0,0,0.45)",
+          overflow: "hidden"
+        })}
+      >
+        <div style={{ height: 2, background: `linear-gradient(90deg,${C.green},${C.accent})` }} />
+
+        <div
+          style={{
+            padding: "10px 16px",
+            borderBottom: `1px solid ${C.border}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: headerBg
+          }}
+        >
+          <div style={{ display: "flex", gap: 7 }}>
+            {["#FF5F57", "#FFBD2E", "#28C840"].map((c, i) => (
+              <div
+                key={i}
+                onClick={i === 0 ? onClose : undefined}
+                style={{
+                  width: 11,
+                  height: 11,
+                  borderRadius: "50%",
+                  background: c,
+                  cursor: i === 0 ? "pointer" : "default"
+                }}
+              />
+            ))}
+          </div>
+          <span style={{ fontFamily: "monospace", fontSize: 11, color: C.textDim }}>
+            elbaraa@portfolio ~ zsh
+          </span>
+          <span />
         </div>
-        <div style={{height:300,overflowY:"auto",padding:"14px 18px",fontFamily:"monospace",fontSize:12.5,lineHeight:1.85}}>
-          {lines.map((line,i)=><div key={i} style={{color:line.t==="in"?C.accent:line.t==="sys"?C.textDim:line.t==="err"?C.pink:C.green,whiteSpace:"pre-wrap"}}>{line.t==="in"&&<span style={{color:C.textDim}}>❯ </span>}{line.v||" "}</div>)}
-          <div ref={endRef}/>
+
+        <div
+          style={{
+            height: 300,
+            overflowY: "auto",
+            padding: "14px 18px",
+            fontFamily: "monospace",
+            fontSize: 12.5,
+            lineHeight: 1.85,
+            background: contentBg
+          }}
+        >
+          {lines.map((line, i) => (
+            <div
+              key={i}
+              style={{
+                color:
+                  line.t === "in"
+                    ? C.accent
+                    : line.t === "sys"
+                    ? C.textDim
+                    : line.t === "err"
+                    ? C.pink
+                    : C.green,
+                whiteSpace: "pre-wrap"
+              }}
+            >
+              {line.t === "in" && <span style={{ color: C.textDim }}>❯ </span>}
+              {line.v || " "}
+            </div>
+          ))}
+          <div ref={endRef} />
         </div>
-        <div style={{padding:"10px 18px",borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontFamily:"monospace",fontSize:13,color:C.green}}>❯</span>
-          <input value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")run();}} autoFocus style={{flex:1,background:"none",border:"none",outline:"none",fontFamily:"monospace",fontSize:12.5,color:C.textPrimary}} placeholder="type a command…"/>
+
+        <div
+          style={{
+            padding: "10px 18px",
+            borderTop: `1px solid ${C.border}`,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: headerBg
+          }}
+        >
+          <span style={{ fontFamily: "monospace", fontSize: 13, color: C.green }}>❯</span>
+          <input
+            value={inp}
+            onChange={(e) => setInp(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") run();
+            }}
+            autoFocus
+            style={{
+              flex: 1,
+              background: "none",
+              border: "none",
+              outline: "none",
+              fontFamily: "monospace",
+              fontSize: 12.5,
+              color: C.textPrimary
+            }}
+            placeholder="type a command…"
+          />
         </div>
       </div>
     </div>
