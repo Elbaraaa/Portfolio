@@ -21,7 +21,7 @@ export const globalCSS = `
     *{cursor:auto !important}
     .astronaut-root{display:none !important}
     .hero-system-panel{display:none !important}
-    .hero-content{padding:84px 20px 80px !important;max-width:100% !important}
+    .hero-content{padding:96px 20px 80px !important;max-width:100% !important}
     .section-pad{padding:60px 20px !important}
     .about-grid{grid-template-columns:1fr !important;gap:28px !important}
     .achieve-grid{grid-template-columns:1fr 1fr !important}
