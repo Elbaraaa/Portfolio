@@ -13,7 +13,7 @@ export function AchievementsSection({ C }) {
       ref={ref}
       className="section-pad"
       style={{
-        padding: "80px 60px",
+        padding: "clamp(96px, 8vw, 140px) clamp(32px, 5vw, 88px)",
         background: "transparent",
         minHeight: "100vh",
         display: "flex",
@@ -22,7 +22,13 @@ export function AchievementsSection({ C }) {
         zIndex: 2
       }}
     >
-      <div style={{ maxWidth: 1080, margin: "0 auto", width: "100%" }}>
+      <div
+        style={{
+          maxWidth: "clamp(1120px, 78vw, 1400px)",
+          margin: "0 auto",
+          width: "100%"
+        }}
+      >
         <div
           style={{
             opacity: inView ? 1 : 0,
@@ -30,14 +36,24 @@ export function AchievementsSection({ C }) {
             transition: "all 0.6s"
           }}
         >
-          <SectionTag num="05" label="Recognition" C={C} />
+          <div
+            style={{
+              transform: "scale(1.18)",
+              transformOrigin: "left center",
+              width: "fit-content",
+              marginBottom: "clamp(10px, 1vw, 14px)"
+            }}
+          >
+            <SectionTag num="05" label="Recognition" C={C} />
+          </div>
+
           <h2
             style={{
               fontFamily: "system-ui",
-              fontSize: "clamp(28px,4vw,46px)",
+              fontSize: "clamp(32px, 4.2vw, 54px)",
               fontWeight: 800,
               letterSpacing: "-0.02em",
-              margin: "0 0 36px",
+              margin: "0 0 clamp(32px, 2.4vw, 44px)",
               color: C.textPrimary
             }}
           >
@@ -50,7 +66,7 @@ export function AchievementsSection({ C }) {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(4,1fr)",
-            gap: 14
+            gap: "clamp(16px, 1.4vw, 22px)"
           }}
         >
           {achievements.map((a, i) => (
@@ -58,7 +74,8 @@ export function AchievementsSection({ C }) {
               key={a.title}
               style={{
                 ...mkPanel(C, {
-                  padding: 22,
+                  padding: "clamp(24px, 1.6vw, 30px)",
+                  borderRadius: "clamp(10px, 0.9vw, 14px)",
                   opacity: inView ? 1 : 0,
                   transform: inView ? "none" : "translateY(20px)",
                   transition: "opacity 0.6s ease, transform 0.6s ease",
@@ -73,33 +90,44 @@ export function AchievementsSection({ C }) {
                 WebkitBackdropFilter: isLight ? "blur(10px)" : "none"
               }}
             >
-              <div style={{ fontSize: 26, marginBottom: 12 }}>{a.icon}</div>
+              <div
+                style={{
+                  fontSize: "clamp(28px, 1.9vw, 36px)",
+                  marginBottom: "clamp(12px, 1vw, 16px)"
+                }}
+              >
+                {a.icon}
+              </div>
+
               <div
                 style={{
                   fontFamily: "system-ui",
                   fontWeight: 700,
-                  fontSize: 14,
+                  fontSize: "clamp(16px, 1.05vw, 20px)",
                   color: C.textPrimary,
-                  marginBottom: 4
+                  marginBottom: "clamp(4px, 0.5vw, 8px)",
+                  lineHeight: 1.3
                 }}
               >
                 {a.title}
               </div>
+
               <div
                 style={{
                   fontFamily: "monospace",
-                  fontSize: 10,
+                  fontSize: "clamp(10px, 0.75vw, 12px)",
                   color: C.accent,
-                  marginBottom: 10
+                  marginBottom: "clamp(10px, 0.8vw, 14px)"
                 }}
               >
                 {a.event}
               </div>
+
               <p
                 style={{
-                  fontSize: 12,
+                  fontSize: "clamp(13px, 0.9vw, 15px)",
                   color: C.textDim,
-                  lineHeight: 1.6,
+                  lineHeight: 1.7,
                   margin: 0
                 }}
               >
