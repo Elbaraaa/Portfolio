@@ -37,7 +37,7 @@ function getIsDarkFromColor(color) {
 
 export function SectionDots({ current, goTo, C }) {
   return (
-    <div style={{position:"fixed",right:20,top:"50%",transform:"translateY(-50%)",zIndex:300,display: window.innerWidth <= 767 ? "none" : "flex",flexDirection:"column",gap:10}}>
+    <div style={{position:"fixed",right:20,top:"50%",transform:"translateY(-50%)",zIndex:2000,display: window.innerWidth <= 767 ? "none" : "flex",flexDirection:"column",gap:10}}>
       {SECTIONS.map((id,i)=>(
         <button key={id} onClick={()=>goTo(i)} style={{width:i===current?22:7,height:7,borderRadius:4,border:"none",cursor:"pointer",background:i===current?`linear-gradient(90deg,${C.accent},${C.green})`:C.border,transition:"all 0.3s",padding:0}}/>
       ))}
@@ -95,7 +95,7 @@ export function MenuOverlay({ open, onClose, goTo, C }) {
 
   return (
     <div
-      style={{position:"fixed",inset:0,zIndex:600,pointerEvents:open?"all":"none",overscrollBehavior:"contain"}}
+      style={{position:"fixed",inset:0,zIndex:2000,pointerEvents:open?"all":"none",overscrollBehavior:"contain"}}
       onClick={onClose}
       onWheelCapture={handleWheel}
       onTouchStartCapture={handleTouchStart}
@@ -238,7 +238,7 @@ export function BackToTop({ goTo, C }) {
   const [visible,setVisible]=useState(false);
   useEffect(()=>{ const h=()=>setVisible(window.scrollY>200); window.addEventListener("scroll",h,{passive:true}); return()=>window.removeEventListener("scroll",h); },[]);
   return (
-    <button onClick={()=>goTo(0)} style={{position:"fixed",bottom:88,left:24,zIndex:800,width:40,height:40,borderRadius:"50%",background:C.panel,border:`1px solid ${C.border}`,color:C.textSecondary,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(12px)",transition:"opacity 0.3s, transform 0.3s",pointerEvents:visible?"all":"none"}}
+    <button onClick={()=>goTo(0)} style={{position:"fixed",bottom:88,left:24,zIndex:2000,width:40,height:40,borderRadius:"50%",background:C.panel,border:`1px solid ${C.border}`,color:C.textSecondary,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(12px)",transition:"opacity 0.3s, transform 0.3s",pointerEvents:visible?"all":"none"}}
       onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent;e.currentTarget.style.color=C.accent;}}
       onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textSecondary;}}>↑</button>
   );
