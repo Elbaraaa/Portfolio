@@ -42,8 +42,13 @@ function LinkedInIcon({ color = "currentColor", size = 16 }) {
 export function HeroSection({ onMenu, onHire, C }) {
   const [uptime, setUptime] = useState(0);
   const width = useWindowWidth();
+
   const isMobile = width <= 767;
-  const isTightHero = width <= 1100;
+  const isTablet = width <= 1024;
+  const isLaptop = width <= 1280;
+  const isTightHero = width <= 1280;
+  const isWide = width >= 1600;
+  const isUltraWide = width >= 1920;
 
   useEffect(() => {
     const s = Date.now();
@@ -69,12 +74,38 @@ export function HeroSection({ onMenu, onHire, C }) {
     }
   ];
 
+  const heroContentWidth = isMobile
+    ? "100%"
+    : isTablet
+    ? "min(90vw, 760px)"
+    : isLaptop
+    ? "min(74vw, 920px)"
+    : isWide
+    ? "min(58vw, 1120px)"
+    : "min(64vw, 1000px)";
+
+  const heroPaddingX = isMobile
+    ? "0 20px"
+    : isTablet
+    ? "0 28px"
+    : "0 clamp(28px, 3vw, 56px)";
+
+  const heroNameSize = isMobile
+    ? "clamp(44px, 12vw, 64px)"
+    : isTablet
+    ? "clamp(58px, 8vw, 82px)"
+    : isLaptop
+    ? "clamp(68px, 6.5vw, 92px)"
+    : isUltraWide
+    ? "clamp(82px, 5vw, 118px)"
+    : "clamp(72px, 5.8vw, 104px)";
+
   return (
     <section
       id="hero"
       style={{
         position: "relative",
-        height: "100vh",
+        minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         overflow: "hidden",
@@ -97,107 +128,108 @@ export function HeroSection({ onMenu, onHire, C }) {
         }}
       />
 
-      <div
-        className="hero-system-panel"
-        style={{
-          position: "absolute",
-          top: "50%",
-          right: "clamp(28px, 3vw, 64px)",
-          transform: "translateY(-50%)",
-          zIndex: 5,
-          ...mkPanel(C, {
-            padding: "clamp(24px, 2vw, 34px) clamp(20px, 1.8vw, 30px)",
-            width: "clamp(240px, 18vw, 320px)",
-            borderRadius: "clamp(10px, 1vw, 16px)",
-            animation: "fadeUp 0.6s 1.4s both"
-          })
-        }}
-      >
+      {!isTightHero && (
         <div
+          className="hero-system-panel"
           style={{
-            fontFamily: "monospace",
-            fontSize: "clamp(11px, 0.75vw, 13px)",
-            color: C.textDim,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            marginBottom: "clamp(12px, 1vw, 16px)"
+            position: "absolute",
+            top: "50%",
+            right: "clamp(28px, 3vw, 64px)",
+            transform: "translateY(-50%)",
+            zIndex: 5,
+            ...mkPanel(C, {
+              padding: "clamp(24px, 2vw, 34px) clamp(20px, 1.8vw, 30px)",
+              width: "clamp(240px, 18vw, 320px)",
+              borderRadius: "clamp(10px, 1vw, 16px)",
+              animation: "fadeUp 0.6s 1.4s both"
+            })
           }}
         >
-          System
-        </div>
-
-        {[["BUILD", "PASSING", C.green], ["DEPLOY", "LIVE", C.accent], ["SESSION", uptime + "s", C.orange]].map(
-          (row) => (
-            <div
-              key={row[0]}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "clamp(10px, 0.8vw, 14px)",
-                fontFamily: "monospace",
-                fontSize: "clamp(12px, 0.9vw, 15px)"
-              }}
-            >
-              <span style={{ color: C.textDim }}>{row[0]}</span>
-              <span style={{ color: row[2] }}>{row[1]}</span>
-            </div>
-          )
-        )}
-
-        <div style={{ height: 1, background: C.border, margin: "clamp(14px, 1vw, 18px) 0" }} />
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            fontFamily: "monospace",
-            fontSize: "clamp(11px, 0.8vw, 14px)",
-            color: C.green,
-            marginBottom: "clamp(14px, 1vw, 18px)"
-          }}
-        >
-          <span
+          <div
             style={{
-              width: "clamp(6px, 0.5vw, 8px)",
-              height: "clamp(6px, 0.5vw, 8px)",
-              borderRadius: "50%",
-              background: C.green,
-              display: "inline-block",
-              animation: "pulse 1.5s ease-in-out infinite"
+              fontFamily: "monospace",
+              fontSize: "clamp(11px, 0.75vw, 13px)",
+              color: C.textDim,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: "clamp(12px, 1vw, 16px)"
             }}
-          />
-          Summer 2026 open
-        </div>
+          >
+            System
+          </div>
 
-        <button
-          style={{
-            width: "100%",
-            padding: "clamp(11px, 0.9vw, 14px) 0",
-            background: `linear-gradient(90deg,${C.accent}20,${C.green}15)`,
-            border: `1px solid ${C.accent}40`,
-            borderRadius: "clamp(7px, 0.8vw, 10px)",
-            color: C.accent,
-            fontFamily: "monospace",
-            fontSize: "clamp(11px, 0.8vw, 14px)",
-            cursor: "pointer",
-            fontWeight: 700
-          }}
-          onClick={() => alert("📄 Resume link coming soon!")}
-        >
-          📄 Download Resume
-        </button>
-      </div>
+          {[["BUILD", "PASSING", C.green], ["DEPLOY", "LIVE", C.accent], ["SESSION", uptime + "s", C.orange]].map(
+            (row) => (
+              <div
+                key={row[0]}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "clamp(10px, 0.8vw, 14px)",
+                  fontFamily: "monospace",
+                  fontSize: "clamp(12px, 0.9vw, 15px)"
+                }}
+              >
+                <span style={{ color: C.textDim }}>{row[0]}</span>
+                <span style={{ color: row[2] }}>{row[1]}</span>
+              </div>
+            )
+          )}
+
+          <div style={{ height: 1, background: C.border, margin: "clamp(14px, 1vw, 18px) 0" }} />
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontFamily: "monospace",
+              fontSize: "clamp(11px, 0.8vw, 14px)",
+              color: C.green,
+              marginBottom: "clamp(14px, 1vw, 18px)"
+            }}
+          >
+            <span
+              style={{
+                width: "clamp(6px, 0.5vw, 8px)",
+                height: "clamp(6px, 0.5vw, 8px)",
+                borderRadius: "50%",
+                background: C.green,
+                display: "inline-block",
+                animation: "pulse 1.5s ease-in-out infinite"
+              }}
+            />
+            Summer 2026 open
+          </div>
+
+          <button
+            style={{
+              width: "100%",
+              padding: "clamp(11px, 0.9vw, 14px) 0",
+              background: `linear-gradient(90deg,${C.accent}20,${C.green}15)`,
+              border: `1px solid ${C.accent}40`,
+              borderRadius: "clamp(7px, 0.8vw, 10px)",
+              color: C.accent,
+              fontFamily: "monospace",
+              fontSize: "clamp(11px, 0.8vw, 14px)",
+              cursor: "pointer",
+              fontWeight: 700
+            }}
+            onClick={() => alert("📄 Resume link coming soon!")}
+          >
+            📄 Download Resume
+          </button>
+        </div>
+      )}
 
       <div
         className="hero-content"
         style={{
           position: "relative",
           zIndex: 4,
-          padding: "0 clamp(28px, 5vw, 88px)",
-          maxWidth: "clamp(980px, 58vw, 1220px)",
+          width: heroContentWidth,
+          padding: heroPaddingX,
           paddingTop: "clamp(40px, 4vw, 72px)",
-          width: "100%",
           boxSizing: "border-box"
         }}
       >
@@ -237,7 +269,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             className="grad-text"
             style={{
               display: "block",
-              fontSize: "clamp(56px, 7.8vw, 110px)",
+              fontSize: heroNameSize,
               background: `linear-gradient(135deg,${C.textPrimary},${C.accent})`
             }}
           >
@@ -247,7 +279,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             className="grad-text"
             style={{
               display: "block",
-              fontSize: "clamp(56px, 7.8vw, 110px)",
+              fontSize: heroNameSize,
               background: `linear-gradient(135deg,${C.accent},${C.green})`
             }}
           >
@@ -258,7 +290,7 @@ export function HeroSection({ onMenu, onHire, C }) {
         <div
           style={{
             fontFamily: "monospace",
-            fontSize: "clamp(15px, 1vw, 18px)",
+            fontSize: isMobile ? "clamp(13px, 3.6vw, 16px)" : "clamp(15px, 1vw, 18px)",
             color: C.accent,
             marginBottom: "clamp(18px, 1.4vw, 24px)",
             minHeight: "clamp(22px, 2vw, 30px)",
@@ -271,9 +303,9 @@ export function HeroSection({ onMenu, onHire, C }) {
         <p
           style={{
             color: C.textSecondary,
-            fontSize: "clamp(16px, 1.05vw, 20px)",
+            fontSize: isMobile ? "clamp(15px, 4vw, 18px)" : "clamp(16px, 1.05vw, 20px)",
             lineHeight: 1.75,
-            maxWidth: "clamp(540px, 36vw, 720px)",
+            maxWidth: isMobile ? "100%" : "clamp(540px, 36vw, 720px)",
             marginBottom: "clamp(20px, 1.6vw, 28px)",
             animation: "fadeUp 0.6s 1.1s both"
           }}
@@ -400,9 +432,9 @@ export function HeroSection({ onMenu, onHire, C }) {
           </button>
 
           <button
-            className="mobile-resume-btn"
             onClick={() => alert("📄 Resume link coming soon!")}
             style={{
+              display: isTightHero ? "inline-flex" : "none",
               alignItems: "center",
               gap: 8,
               padding: "clamp(13px, 1vw, 16px) clamp(22px, 1.8vw, 30px)",
@@ -429,7 +461,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             borderRadius: "clamp(10px, 0.9vw, 14px)",
             overflow: "hidden",
             animation: "fadeUp 0.6s 1.5s both",
-            maxWidth: "clamp(580px, 42vw, 760px)"
+            maxWidth: isMobile ? "100%" : "clamp(580px, 42vw, 760px)"
           }}
         >
           {stats.map((s, i) => (
@@ -438,7 +470,13 @@ export function HeroSection({ onMenu, onHire, C }) {
               style={{
                 padding: "clamp(16px, 1.1vw, 22px) clamp(18px, 1.4vw, 24px)",
                 background: C.surface,
-                borderRight: isMobile ? (i % 2 === 0 ? `1px solid ${C.border}` : "none") : i < 3 ? `1px solid ${C.border}` : "none",
+                borderRight: isMobile
+                  ? i % 2 === 0
+                    ? `1px solid ${C.border}`
+                    : "none"
+                  : i < 3
+                  ? `1px solid ${C.border}`
+                  : "none",
                 borderBottom: isMobile && i < 2 ? `1px solid ${C.border}` : "none"
               }}
             >
@@ -491,7 +529,13 @@ export function HeroSection({ onMenu, onHire, C }) {
             >
               scroll to navigate
             </div>
-            <div style={{ color: C.textDim, fontSize: "clamp(16px, 1.2vw, 22px)", animation: "bounce 1.6s ease-in-out infinite" }}>
+            <div
+              style={{
+                color: C.textDim,
+                fontSize: "clamp(16px, 1.2vw, 22px)",
+                animation: "bounce 1.6s ease-in-out infinite"
+              }}
+            >
               ↓
             </div>
           </div>
@@ -523,7 +567,13 @@ export function HeroSection({ onMenu, onHire, C }) {
           >
             scroll to navigate
           </div>
-          <div style={{ color: C.textDim, fontSize: "clamp(16px, 1.2vw, 22px)", animation: "bounce 1.6s ease-in-out infinite" }}>
+          <div
+            style={{
+              color: C.textDim,
+              fontSize: "clamp(16px, 1.2vw, 22px)",
+              animation: "bounce 1.6s ease-in-out infinite"
+            }}
+          >
             ↓
           </div>
         </div>
