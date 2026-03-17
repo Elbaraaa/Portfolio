@@ -1091,7 +1091,7 @@ export function ArcadeSection({ C, darkMode }) {
           ref={gridRef}
           style={{
             overflow: "hidden",
-            maxHeight: !isMobile && (phase === "grid" || isClosing) ? "1200px" : "0px",
+            maxHeight: !isMobile && (phase === "grid" || phase === "imploding" || isClosing) ? "1200px" : "0px",
             opacity: !isMobile && phase === "grid" && !isClosing ? 1 : 0,
             transform: !isMobile && phase === "grid" && !isClosing ? "translateY(0) scale(1)" : "translateY(24px) scale(0.98)",
             transition: "max-height 0.75s cubic-bezier(0.22,1,0.36,1), opacity 0.45s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)",
