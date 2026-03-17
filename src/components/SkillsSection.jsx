@@ -114,7 +114,7 @@ export function SkillsSection({ C, darkMode }) {
           margin: "0 auto",
           width: "100%",
           position: "relative",
-          zIndex: 1000
+          zIndex: 200
         }}
       >
         <div
