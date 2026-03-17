@@ -233,6 +233,7 @@ function RubiksCube({ onExplode, onImplodeComplete, sectionRef, active, implode 
       }
 
       st.startSlice = startSlice;
+      st.resetSlice = () => { sliceAnimating = false; animSlice = []; };
       st.sliceInterval = setInterval(startSlice, 650);
       st.raycaster = new THREE.Raycaster();
       st.camera = camera;
@@ -347,6 +348,8 @@ function RubiksCube({ onExplode, onImplodeComplete, sectionRef, active, implode 
           if (t >= 1) {
             st.imploding = false;
             st.exploded = false;
+            sliceAnimating = false;
+            animSlice = [];
             bloomMat.uniforms.uOpacity.value = 0;
             innerLight.intensity = 0;
             bloomSphere.scale.setScalar(1);
@@ -432,6 +435,7 @@ function RubiksCube({ onExplode, onImplodeComplete, sectionRef, active, implode 
     if (st.charged || heldMs < 300) {
       st.shaking = false;
       st.charged = false;
+      st.resetSlice();
       st.exploding = true;
       st.explodeStart = performance.now();
       st.exploded = true;
