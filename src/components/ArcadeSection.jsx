@@ -3,11 +3,32 @@ import { mkPanel } from "../styles/theme";
 import { useInView } from "../hooks/useInView";
 import { SectionTag } from "./ui";
 
-function RubiksCube({ onExplode }) {
+function RubiksCube({ onExplode, onImplodeComplete, sectionRef, active, implode }) {
   const mountRef = useRef(null);
   const stateRef = useRef({});
   const holdTimer = useRef(null);
   const isHolding = useRef(false);
+
+  // Trigger implode animation when prop changes
+  useEffect(() => {
+    const st = stateRef.current;
+    if (implode && st.exploded && !st.imploding) {
+      st.imploding = true;
+      st.implodeStart = performance.now();
+    }
+  }, [implode]);
+
+  // Pause/resume slices based on active
+  useEffect(() => {
+    const st = stateRef.current;
+    if (!st.startSlice) return;
+    if (active && !st.exploded) {
+      clearInterval(st.sliceInterval);
+      st.sliceInterval = setInterval(st.startSlice, 650);
+    } else {
+      clearInterval(st.sliceInterval);
+    }
+  }, [active]);
 
   useEffect(() => {
     const st = stateRef.current;
@@ -49,27 +70,6 @@ function RubiksCube({ onExplode }) {
       document.head.appendChild(s);
     }
 
-    function getBounds() {
-      const el = mountRef.current;
-      if (!el) return { width: window.innerWidth, height: window.innerHeight };
-
-      const rect = el.getBoundingClientRect();
-      return {
-        width: Math.max(rect.width, 1),
-        height: Math.max(rect.height, 1)
-      };
-    }
-
-    function getResponsiveCubeScale(width, height) {
-      const basis = Math.min(width, height * 1.45);
-      return Math.max(0.6, Math.min(0.9, basis / 620));
-    }
-
-    function getResponsiveCameraZ(width, height) {
-      const basis = Math.min(width, height * 1.45);
-      return Math.max(12.4, Math.min(17.2, 16.8 - (basis - 320) * 0.009));
-    }
-
     function roundedBox(size, radius, segs) {
       const g = new THREE.BoxGeometry(size, size, size, segs, segs, segs);
       const pos = g.attributes.position;
@@ -91,11 +91,22 @@ function RubiksCube({ onExplode }) {
       return g;
     }
 
+    function resizeRenderer() {
+      if (!renderer || !camera) return;
+      const rect = sectionRef?.current?.getBoundingClientRect();
+      const W = rect?.width || window.innerWidth;
+      const H = rect?.height || window.innerHeight;
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+      renderer.setSize(W, H);
+    }
+
     function setup() {
       const el = mountRef.current;
       if (!el) return;
-      const W = window.innerWidth, H = window.innerHeight;
-      //st.baseCubeScale = getResponsiveCubeScale(W, H);
+      const rect = sectionRef?.current?.getBoundingClientRect();
+      const W = rect?.width || window.innerWidth;
+      const H = rect?.height || window.innerHeight;
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -105,9 +116,7 @@ function RubiksCube({ onExplode }) {
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 200);
-      // camera.position.set(0, 0, getResponsiveCameraZ(W, H));
-      camera.position.set(0, 0, 11);
-
+      camera.position.set(0, 0, 14);
       camera.lookAt(0, 0, 0);
 
       scene.add(new THREE.AmbientLight(0xffffff, 0.5));
@@ -139,6 +148,7 @@ function RubiksCube({ onExplode }) {
 
       cubeGroup = new THREE.Group();
       scene.add(cubeGroup);
+      st.cubeGroup = cubeGroup;
       const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0 });
       const matCache = {};
       for (const k in FC) {
@@ -179,7 +189,7 @@ function RubiksCube({ onExplode }) {
         }
       }
       cubeGroup.rotation.x = 0.35;
-      cubeGroup.scale.setScalar(st.baseCubeScale);
+      cubeGroup.scale.setScalar(1);
 
       function startSlice() {
         if (sliceAnimating || st.exploded) return;
@@ -230,11 +240,14 @@ function RubiksCube({ onExplode }) {
 
       function loop() {
         raf = requestAnimationFrame(loop);
-        if (!st.exploded) {
+
+        // Normal idle rotation + slices
+        if (!st.exploded && !st.imploding) {
           updateSlice();
           rotY += 0.005;
           cubeGroup.rotation.y = rotY;
         }
+
         const cgPos = new THREE.Vector3();
         cubeGroup.getWorldPosition(cgPos);
         innerLight.position.copy(cgPos);
@@ -261,13 +274,14 @@ function RubiksCube({ onExplode }) {
           }
           innerLight.intensity = ramp * 8;
           innerLight.distance = 3 + ramp * 10;
-        } else if (!st.exploded) {
+        } else if (!st.exploded && !st.imploding) {
           cubeGroup.position.x += (0 - cubeGroup.position.x) * 0.2;
           cubeGroup.position.y += (0 - cubeGroup.position.y) * 0.2;
-          cubeGroup.scale.setScalar(st.baseCubeScale || 1);
+          cubeGroup.scale.setScalar(1);
           innerLight.intensity *= 0.85;
         }
 
+        // ── Explode outward ──
         if (st.exploding) {
           const t = Math.min(1, (performance.now() - st.explodeStart) / 900);
           const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
@@ -295,21 +309,76 @@ function RubiksCube({ onExplode }) {
             bloomMat.uniforms.uOpacity.value = 0;
           }
         }
+
+        // ── Implode back together (reverse explode) ──
+        if (st.imploding) {
+          const t = Math.min(1, (performance.now() - st.implodeStart) / 900);
+          const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          const spread = (1 - e) * 38;  // 38 → 0
+          cubeGroup.position.set(0, 0, 0);
+          cubeGroup.rotation.z = 0;
+          cubeGroup.scale.setScalar(1);
+
+          // Light pulses as cubies converge
+          innerLight.intensity = t > 0.8 ? (1 - t) * 100 : e * 4;
+          innerLight.distance = 5 + (1 - e) * 18;
+          bloomSphere.scale.setScalar(0.1 + (1 - e) * 28);
+          bloomMat.uniforms.uOpacity.value = 0;
+
+          for (let i = 0; i < cubies.length; i++) {
+            const c = cubies[i];
+            c.position.copy(c.userData.home.clone().add(c.userData.dir.clone().multiplyScalar(spread)));
+            const spin = (1 - e) * Math.PI * 2;
+            c.quaternion.setFromEuler(
+              new THREE.Euler(
+                spin * c.userData.tumble.x,
+                spin * c.userData.tumble.y,
+                spin * c.userData.tumble.z
+              )
+            );
+          }
+
+          // Flash on impact
+          if (t >= 0.95) {
+            innerLight.intensity = (1 - ((t - 0.95) / 0.05)) * 15;
+            innerLight.distance = 14;
+          }
+
+          if (t >= 1) {
+            st.imploding = false;
+            st.exploded = false;
+            bloomMat.uniforms.uOpacity.value = 0;
+            innerLight.intensity = 0;
+            bloomSphere.scale.setScalar(1);
+            // Snap cubies exactly to home
+            for (const c of cubies) {
+              c.position.copy(c.userData.home);
+              c.quaternion.identity();
+            }
+            // Resume rotation and slices
+            clearInterval(st.sliceInterval);
+            st.sliceInterval = setInterval(st.startSlice, 650);
+            // Notify parent
+            if (st.onImplodeComplete) st.onImplodeComplete();
+          }
+        }
+
         renderer.render(scene, camera);
       }
       loop();
 
-      const onResize = () => {
-        const W2 = window.innerWidth, H2 = window.innerHeight;
-        camera.aspect = W2 / H2;
-        camera.position.set(0, 0, getResponsiveCameraZ(W2, H2));
-        camera.updateProjectionMatrix();
-        renderer.setSize(W2, H2);
-        cubeGroup.scale.setScalar(getResponsiveCubeScale(W2, H2));
-      };
+      let ro = null;
+      if (typeof ResizeObserver !== "undefined" && sectionRef?.current) {
+        ro = new ResizeObserver(() => resizeRenderer());
+        ro.observe(sectionRef.current);
+      }
+
+      const onResize = () => resizeRenderer();
       window.addEventListener("resize", onResize);
+
       st.cleanup = () => {
         window.removeEventListener("resize", onResize);
+        if (ro) ro.disconnect();
         clearInterval(st.sliceInterval);
         cancelAnimationFrame(raf);
         renderer.dispose();
@@ -324,13 +393,17 @@ function RubiksCube({ onExplode }) {
     };
   }, []);
 
+  // Keep onImplodeComplete ref in sync so the animation loop can call it
+  useEffect(() => {
+    stateRef.current.onImplodeComplete = onImplodeComplete;
+  }, [onImplodeComplete]);
+
   const startHold = useCallback((e) => {
     e.preventDefault();
     const st = stateRef.current;
-    if (st.exploded || !st.raycaster || !st.camera || !st.cubies) return;
+    if (st.exploded || st.imploding || !st.raycaster || !st.camera || !st.cubies) return;
     const rect = mountRef.current?.getBoundingClientRect();
     if (!rect) return;
-
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     const mouse = new window.THREE.Vector2(
@@ -373,19 +446,19 @@ function RubiksCube({ onExplode }) {
   return (
     <div
       ref={mountRef}
-      onMouseDown={startHold}
-      onMouseUp={endHold}
-      onMouseLeave={endHold}
-      onTouchStart={startHold}
-      onTouchEnd={endHold}
+      onMouseDown={active ? startHold : undefined}
+      onMouseUp={active ? endHold : undefined}
+      onMouseLeave={active ? endHold : undefined}
+      onTouchStart={active ? startHold : undefined}
+      onTouchEnd={active ? endHold : undefined}
       style={{
         position: "absolute",
         inset: 0,
-        top: "9%",
         zIndex: 100,
-        cursor: "none",
+        cursor: active ? "none" : "default",
         userSelect: "none",
-        WebkitUserSelect: "none"
+        WebkitUserSelect: "none",
+        pointerEvents: active ? "auto" : "none"
       }}
       data-cube-overlay="true"
     />
@@ -728,15 +801,16 @@ function Game2048({ C, onClose }) {
 export function ArcadeSection({ C, darkMode }) {
   const { ref, inView } = useInView(0.1);
   const [playing, setPlaying] = useState(false);
-  const [phase, setPhase] = useState("idle");
+  const [phase, setPhase] = useState("idle");        // "idle" | "grid" | "imploding"
   const [isMobile, setIsMobile] = useState(false);
   const [cardsVisible, setCardsVisible] = useState(false);
-  const [showCube, setShowCube] = useState(true);
   const [bgActive, setBgActive] = useState(false);
   const [headingAnim, setHeadingAnim] = useState("");
   const [isClosing, setIsClosing] = useState(false);
+  const [implodeTrigger, setImplodeTrigger] = useState(false);
 
   const gridRef = useRef(null);
+  const cubeActive = phase === "idle" && !isClosing;
 
   useEffect(() => {
     document.documentElement.style.overflowY = playing ? "hidden" : "";
@@ -758,24 +832,29 @@ export function ArcadeSection({ C, darkMode }) {
     setIsClosing(false);
     setTimeout(() => {
       setPhase("grid");
-      setShowCube(false);
     }, 600);
     setTimeout(() => setCardsVisible(true), 750);
   }, []);
 
   const handleCollapse = useCallback(() => {
+    // Phase 1: Fade out cards + bg
     setIsClosing(true);
     setCardsVisible(false);
-    setHeadingAnim("down");
     setBgActive(false);
-    document.documentElement.style.overflowY = "hidden";  // lock during transition
+    setHeadingAnim("down");
 
+    // Phase 2: After cards fade, trigger implode animation
     setTimeout(() => {
-      setPhase("idle");
-      setShowCube(true);
+      setPhase("imploding");
       setIsClosing(false);
-      document.documentElement.style.overflowY = "";  // unlock after
-    }, 750);
+      setImplodeTrigger(true);
+      document.documentElement.style.overflowY = "";
+    }, 500);
+  }, []);
+
+  const handleImplodeComplete = useCallback(() => {
+    setPhase("idle");
+    setImplodeTrigger(false);
   }, []);
 
   useEffect(() => {
@@ -824,6 +903,9 @@ export function ArcadeSection({ C, darkMode }) {
     { name: "Memory", icon: "🃏", desc: "Flip cards, find the pairs.", color: C.pink }
   ];
 
+  // Show hint text when cube is idle and assembled
+  const showHint = !isMobile && phase === "idle";
+
   return (
     <section
       id="arcade"
@@ -835,7 +917,7 @@ export function ArcadeSection({ C, darkMode }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        justifyContent: phase === "grid" || isClosing ? "flex-start" : "center",
+        justifyContent: "center",
         alignItems: "stretch",
         paddingTop: "clamp(96px, 8vw, 140px)",
         position: "relative",
@@ -868,7 +950,16 @@ export function ArcadeSection({ C, darkMode }) {
         <span style={{ fontFamily: "system-ui", fontWeight: 900, fontSize: "20vw", color: C.accent, opacity: 0.02, userSelect: "none" }}>PLAY</span>
       </div>
 
-      {!isMobile && showCube && !isClosing && inView && phase === "idle" && <RubiksCube onExplode={handleExplode} />}
+      {/* Cube stays mounted — controlled via active/implode props */}
+      {!isMobile && inView && (
+        <RubiksCube
+          onExplode={handleExplode}
+          onImplodeComplete={handleImplodeComplete}
+          sectionRef={ref}
+          active={cubeActive}
+          implode={implodeTrigger}
+        />
+      )}
 
       <div
         style={{
@@ -906,9 +997,8 @@ export function ArcadeSection({ C, darkMode }) {
               letterSpacing: "-0.02em",
               margin: "0 0 10px",
               color: C.textPrimary,
-              transform: headingAnim === "up" ? "translateY(-10px)" : "translateY(0)",
-              transition: "transform 0.55s cubic-bezier(0.22,1,0.36,1)",
-              willChange: "transform"
+              opacity: headingAnim === "up" ? 0.6 : 1,
+              transition: "opacity 0.3s ease"
             }}
           >
             Need a{" "}
@@ -933,17 +1023,12 @@ export function ArcadeSection({ C, darkMode }) {
         <div
           style={{
             overflow: "hidden",
-            maxHeight: !isMobile && showCube && phase === "idle" ? "520px" : "0px",
-            opacity: !isMobile && showCube && phase === "idle" ? 1 : 0,
+            maxHeight: showHint ? "520px" : "0px",
+            opacity: showHint ? 1 : 0,
             transition: "max-height 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease"
           }}
         >
-          <div
-            style={{
-              position: "relative",
-              height: "clamp(320px, 34vw, 500px)"
-            }}
-          >
+          <div style={{ position: "relative", height: "clamp(320px, 34vw, 500px)" }}>
             <div
               style={{
                 position: "absolute",
@@ -962,30 +1047,14 @@ export function ArcadeSection({ C, darkMode }) {
                 whiteSpace: "nowrap"
               }}
             >
-              <span
-                style={{
-                  color: C.accent,
-                  animation: "cubePulse 1.8s ease-in-out infinite",
-                  fontSize: "clamp(18px, 1.2vw, 22px)"
-                }}
-              >
-                ◆
-              </span>
+              <span style={{ color: C.accent, animation: "cubePulse 1.8s ease-in-out infinite", fontSize: "clamp(18px, 1.2vw, 22px)" }}>◆</span>
               Hold the cube to charge it up, release to reveal arcade
             </div>
           </div>
         </div>
 
         {isMobile && (
-          <div
-            className="arcade-cards-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: "clamp(16px, 1.4vw, 22px)",
-              pointerEvents: "auto"
-            }}
-          >
+          <div className="arcade-cards-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "clamp(16px, 1.4vw, 22px)", pointerEvents: "auto" }}>
             {games.map((g, i) => (
               <div
                 key={g.name}
@@ -1003,41 +1072,14 @@ export function ArcadeSection({ C, darkMode }) {
                   transform: inView ? "none" : "translateY(20px)",
                   transitionDelay: `${i * 0.1}s`
                 })}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = g.color + "50";
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow = `0 8px 40px ${g.color}20`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = C.border;
-                  e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = g.color + "50"; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 8px 40px ${g.color}20`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
               >
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${g.color},${g.color}50)` }} />
-                <div className="arcade-card-icon" style={{ fontSize: "clamp(52px, 3.2vw, 64px)", marginBottom: "clamp(14px, 1vw, 18px)" }}>
-                  {g.icon}
-                </div>
-                <h3 style={{ fontFamily: "system-ui", fontWeight: 800, fontSize: "clamp(20px, 1.5vw, 26px)", color: C.textPrimary, marginBottom: 10 }}>
-                  {g.name}
-                </h3>
-                <p style={{ fontFamily: "monospace", fontSize: "clamp(13px, 0.88vw, 15px)", color: C.textSecondary, marginBottom: "clamp(20px, 1.5vw, 24px)", lineHeight: 1.7 }}>
-                  {g.desc}
-                </p>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "clamp(9px, 0.75vw, 12px) clamp(16px, 1.1vw, 20px)",
-                    background: g.color + "18",
-                    border: `1px solid ${g.color}40`,
-                    borderRadius: 6,
-                    fontFamily: "monospace",
-                    fontSize: "clamp(11px, 0.8vw, 13px)",
-                    color: g.color
-                  }}
-                >
+                <div className="arcade-card-icon" style={{ fontSize: "clamp(52px, 3.2vw, 64px)", marginBottom: "clamp(14px, 1vw, 18px)" }}>{g.icon}</div>
+                <h3 style={{ fontFamily: "system-ui", fontWeight: 800, fontSize: "clamp(20px, 1.5vw, 26px)", color: C.textPrimary, marginBottom: 10 }}>{g.name}</h3>
+                <p style={{ fontFamily: "monospace", fontSize: "clamp(13px, 0.88vw, 15px)", color: C.textSecondary, marginBottom: "clamp(20px, 1.5vw, 24px)", lineHeight: 1.7 }}>{g.desc}</p>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "clamp(9px, 0.75vw, 12px) clamp(16px, 1.1vw, 20px)", background: g.color + "18", border: `1px solid ${g.color}40`, borderRadius: 6, fontFamily: "monospace", fontSize: "clamp(11px, 0.8vw, 13px)", color: g.color }}>
                   {g.name === "2048" ? "▶ Play Now" : "Coming soon"}
                 </div>
               </div>
@@ -1051,23 +1093,12 @@ export function ArcadeSection({ C, darkMode }) {
             overflow: "hidden",
             maxHeight: !isMobile && (phase === "grid" || isClosing) ? "1200px" : "0px",
             opacity: !isMobile && phase === "grid" && !isClosing ? 1 : 0,
-            transform:
-              !isMobile && phase === "grid" && !isClosing
-                ? "translateY(0) scale(1)"
-                : "translateY(24px) scale(0.98)",
-            transition:
-              "max-height 0.75s cubic-bezier(0.22,1,0.36,1), opacity 0.45s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)",
+            transform: !isMobile && phase === "grid" && !isClosing ? "translateY(0) scale(1)" : "translateY(24px) scale(0.98)",
+            transition: "max-height 0.75s cubic-bezier(0.22,1,0.36,1), opacity 0.45s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)",
             pointerEvents: phase === "grid" && !isClosing ? "auto" : "none"
           }}
         >
-          <div
-            className="arcade-cards-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: "clamp(16px, 1.4vw, 22px)"
-            }}
-          >
+          <div className="arcade-cards-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "clamp(16px, 1.4vw, 22px)" }}>
             {games.map((g, i) => (
               <div
                 key={g.name}
@@ -1085,41 +1116,14 @@ export function ArcadeSection({ C, darkMode }) {
                   transform: cardsVisible ? "none" : "translateY(20px)",
                   transitionDelay: `${i * 0.1}s`
                 })}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = g.color + "50";
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow = `0 8px 40px ${g.color}20`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = C.border;
-                  e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = g.color + "50"; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 8px 40px ${g.color}20`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
               >
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${g.color},${g.color}50)` }} />
-                <div className="arcade-card-icon" style={{ fontSize: "clamp(52px, 3.2vw, 64px)", marginBottom: "clamp(14px, 1vw, 18px)" }}>
-                  {g.icon}
-                </div>
-                <h3 style={{ fontFamily: "system-ui", fontWeight: 800, fontSize: "clamp(20px, 1.5vw, 26px)", color: C.textPrimary, marginBottom: 10 }}>
-                  {g.name}
-                </h3>
-                <p style={{ fontFamily: "monospace", fontSize: "clamp(13px, 0.88vw, 15px)", color: C.textSecondary, marginBottom: "clamp(20px, 1.5vw, 24px)", lineHeight: 1.7 }}>
-                  {g.desc}
-                </p>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "clamp(9px, 0.75vw, 12px) clamp(16px, 1.1vw, 20px)",
-                    background: g.color + "18",
-                    border: `1px solid ${g.color}40`,
-                    borderRadius: 6,
-                    fontFamily: "monospace",
-                    fontSize: "clamp(11px, 0.8vw, 13px)",
-                    color: g.color
-                  }}
-                >
+                <div className="arcade-card-icon" style={{ fontSize: "clamp(52px, 3.2vw, 64px)", marginBottom: "clamp(14px, 1vw, 18px)" }}>{g.icon}</div>
+                <h3 style={{ fontFamily: "system-ui", fontWeight: 800, fontSize: "clamp(20px, 1.5vw, 26px)", color: C.textPrimary, marginBottom: 10 }}>{g.name}</h3>
+                <p style={{ fontFamily: "monospace", fontSize: "clamp(13px, 0.88vw, 15px)", color: C.textSecondary, marginBottom: "clamp(20px, 1.5vw, 24px)", lineHeight: 1.7 }}>{g.desc}</p>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "clamp(9px, 0.75vw, 12px) clamp(16px, 1.1vw, 20px)", background: g.color + "18", border: `1px solid ${g.color}40`, borderRadius: 6, fontFamily: "monospace", fontSize: "clamp(11px, 0.8vw, 13px)", color: g.color }}>
                   {g.name === "2048" ? "▶ Play Now" : "Coming soon"}
                 </div>
               </div>
@@ -1130,36 +1134,18 @@ export function ArcadeSection({ C, darkMode }) {
             <button
               onClick={handleCollapse}
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
+                display: "inline-flex", alignItems: "center", gap: 8,
                 padding: "clamp(12px, 0.9vw, 15px) clamp(24px, 1.8vw, 30px)",
-                background: C.panel,
-                border: `1px solid ${C.accent}55`,
-                borderRadius: "clamp(10px, 0.8vw, 12px)",
-                color: C.textPrimary,
-                fontFamily: "monospace",
-                fontSize: "clamp(12px, 0.8vw, 14px)",
-                fontWeight: 700,
-                cursor: "pointer",
-                boxShadow: `0 8px 22px ${C.accent}18`,
+                background: C.panel, border: `1px solid ${C.accent}55`,
+                borderRadius: "clamp(10px, 0.8vw, 12px)", color: C.textPrimary,
+                fontFamily: "monospace", fontSize: "clamp(12px, 0.8vw, 14px)",
+                fontWeight: 700, cursor: "pointer", boxShadow: `0 8px 22px ${C.accent}18`,
                 opacity: cardsVisible ? 1 : 0,
                 transform: cardsVisible ? "none" : "translateY(8px)",
-                transition:
-                  "opacity 0.4s 0.5s, transform 0.4s 0.5s, border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s"
+                transition: "opacity 0.4s 0.5s, transform 0.4s 0.5s, border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s"
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = C.accent;
-                e.currentTarget.style.color = C.accent;
-                e.currentTarget.style.background = C.accent + "10";
-                e.currentTarget.style.boxShadow = `0 10px 26px ${C.accent}28`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = C.accent + "55";
-                e.currentTarget.style.color = C.textPrimary;
-                e.currentTarget.style.background = C.panel;
-                e.currentTarget.style.boxShadow = `0 8px 22px ${C.accent}18`;
-              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; e.currentTarget.style.background = C.accent + "10"; e.currentTarget.style.boxShadow = `0 10px 26px ${C.accent}28`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.accent + "55"; e.currentTarget.style.color = C.textPrimary; e.currentTarget.style.background = C.panel; e.currentTarget.style.boxShadow = `0 8px 22px ${C.accent}18`; }}
             >
               ← Collapse back to cube
             </button>
@@ -1173,23 +1159,16 @@ export function ArcadeSection({ C, darkMode }) {
             data-arcade-playing="true"
             style={mkPanel(C, {
               padding: "clamp(24px, 1.8vw, 30px)",
-              width: "100%",
-              maxWidth: 460,
-              maxHeight: "90vh",
-              overflowY: "auto",
-              position: "relative",
+              width: "100%", maxWidth: 460, maxHeight: "90vh",
+              overflowY: "auto", position: "relative",
               borderRadius: "clamp(12px, 1vw, 16px)"
             })}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "clamp(16px, 1.1vw, 20px)" }}>
-              <h3 style={{ fontFamily: "system-ui", fontWeight: 700, fontSize: "clamp(18px, 1.2vw, 22px)", color: C.textPrimary, margin: 0 }}>
-                🎲 2048
-              </h3>
-              <div style={{ fontFamily: "monospace", fontSize: "clamp(10px, 0.72vw, 12px)", color: C.textDim }}>
-                tap outside to close
-              </div>
+              <h3 style={{ fontFamily: "system-ui", fontWeight: 700, fontSize: "clamp(18px, 1.2vw, 22px)", color: C.textPrimary, margin: 0 }}>🎲 2048</h3>
+              <div style={{ fontFamily: "monospace", fontSize: "clamp(10px, 0.72vw, 12px)", color: C.textDim }}>tap outside to close</div>
             </div>
             <Game2048 C={C} onClose={() => setPlaying(false)} />
           </div>
