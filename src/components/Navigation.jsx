@@ -35,12 +35,147 @@ function getIsDarkFromColor(color) {
   return luminance < 0.55;
 }
 
+const NAV_ITEMS = [
+  { id: "hero", label: "Home" },
+  { id: "about", label: "About" },
+  { id: "projects", label: "Projects" },
+  { id: "experience", label: "Experience" },
+  { id: "skills", label: "Skills" },
+  { id: "achievements", label: "Achievements" },
+  { id: "arcade", label: "Arcade" },
+  { id: "guestbook", label: "Guestbook" },
+  { id: "hire", label: "Hire Me" },
+];
+
 export function SectionDots({ current, goTo, C }) {
+  const [hovered, setHovered] = useState(false);
+  const [hovIdx, setHovIdx] = useState(-1);
+  const [isMobile, setIsMobile] = useState(false);
+  const leaveTimer = useRef(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 767);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const handleEnter = () => {
+    clearTimeout(leaveTimer.current);
+    setHovered(true);
+  };
+
+  const handleLeave = () => {
+    leaveTimer.current = setTimeout(() => {
+      setHovered(false);
+      setHovIdx(-1);
+    }, 250);
+  };
+
+  if (isMobile) return null;
+
   return (
-    <div style={{position:"fixed",right:20,top:"50%",transform:"translateY(-50%)",zIndex:2000,display: window.innerWidth <= 767 ? "none" : "flex",flexDirection:"column",gap:10}}>
-      {SECTIONS.map((id,i)=>(
-        <button key={id} onClick={()=>goTo(i)} style={{width:i===current?22:7,height:7,borderRadius:4,border:"none",cursor:"pointer",background:i===current?`linear-gradient(90deg,${C.accent},${C.green})`:C.border,transition:"all 0.3s",padding:0}}/>
-      ))}
+    <div
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      style={{
+        position: "fixed",
+        right: 16,
+        top: "50%",
+        transform: "translateY(-50%)",
+        zIndex: 2000,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+        gap: hovered ? 12 : 10,
+        padding: "12px 6px",
+        transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)"
+      }}
+    >
+      {NAV_ITEMS.map((item, i) => {
+        const sectionIdx = SECTIONS.indexOf(item.id);
+        const active = sectionIdx === current;
+        const itemHov = hovIdx === i;
+
+        return (
+          <div
+            key={item.id}
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end"
+            }}
+          >
+            {/* Tooltip */}
+            {itemHov && hovered && (
+              <div style={{
+                position: "absolute",
+                right: "calc(100% + 12px)",
+                whiteSpace: "nowrap",
+                padding: "6px 14px",
+                background: C.panel,
+                border: `1px solid ${active ? C.accent + "50" : C.border}`,
+                borderRadius: 8,
+                fontFamily: "monospace",
+                fontSize: 13,
+                fontWeight: active ? 700 : 500,
+                color: active ? C.accent : C.textPrimary,
+                animation: "navTooltipIn 0.18s ease-out",
+                pointerEvents: "none",
+                backdropFilter: "blur(8px)"
+              }}>
+                {item.label}
+                <div style={{
+                  position: "absolute",
+                  right: -5,
+                  top: "50%",
+                  transform: "translateY(-50%) rotate(45deg)",
+                  width: 8,
+                  height: 8,
+                  background: C.panel,
+                  borderRight: `1px solid ${active ? C.accent + "50" : C.border}`,
+                  borderTop: `1px solid ${active ? C.accent + "50" : C.border}`
+                }} />
+              </div>
+            )}
+
+            {/* Bar dot */}
+            <button
+              onClick={() => goTo(sectionIdx)}
+              onMouseEnter={() => setHovIdx(i)}
+              onMouseLeave={() => setHovIdx(-1)}
+              style={{
+                width: active
+                  ? (hovered ? 28 : 22)
+                  : (itemHov ? 18 : (hovered ? 10 : 7)),
+                height: hovered ? 9 : 7,
+                borderRadius: 5,
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                background: active
+                  ? `linear-gradient(90deg,${C.accent},${C.green})`
+                  : itemHov
+                    ? C.textDim
+                    : C.border,
+                boxShadow: active
+                  ? `0 0 10px ${C.accent}40`
+                  : "none",
+                transition: "all 0.3s cubic-bezier(0.4,0,0.2,1)",
+                display: "block"
+              }}
+            />
+          </div>
+        );
+      })}
+
+      <style>{`
+        @keyframes navTooltipIn {
+          from { opacity: 0; transform: translateX(4px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -246,11 +381,11 @@ export function BackToTop({ goTo, C }) {
 
 export function Footer({ C }) {
   return (
-    <footer style={{padding:"22px 60px",background:C.bg,borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
-      <span style={{fontFamily:"monospace",fontSize:11,color:C.textDim}}>elbaraa.dev</span>
-      <span style={{fontFamily:"monospace",fontSize:11,color:C.textDim}}>© 2025 Elbaraa Abdalla</span>
-      <div style={{display:"flex",alignItems:"center",gap:7,fontFamily:"monospace",fontSize:11,color:C.textDim}}>
-        <div style={{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulse 2s infinite"}}/>All systems operational
+    <footer style={{padding:"22px 60px",background:`${C.bg}E6`,backdropFilter:"blur(16px)",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,position:"relative",zIndex:100}}>
+      <span style={{fontFamily:"monospace",fontSize:11,color:C.textPrimary,opacity:0.6}}>elbaraa.dev</span>
+      <span style={{fontFamily:"monospace",fontSize:11,color:C.textPrimary,opacity:0.6}}>© 2025 Elbaraa Abdalla</span>
+      <div style={{display:"flex",alignItems:"center",gap:7,fontFamily:"monospace",fontSize:11,color:C.textPrimary,opacity:0.6}}>
+        <div style={{width:6,height:6,borderRadius:"50%",background:C.green,opacity:1,animation:"pulse 2s infinite"}}/>All systems operational
       </div>
     </footer>
   );
