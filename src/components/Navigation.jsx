@@ -283,7 +283,7 @@ export function NavBar({ onMenu, onTerminal, C, darkMode, toggleDark }) {
         <div style={{width:26,height:26,border:`1px solid ${C.accent}50`,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",background:`${C.accent}08`}}>
           <div style={{width:8,height:8,background:`linear-gradient(135deg,${C.accent},${C.green})`,borderRadius:2}}/>
         </div>
-        <span style={{fontFamily:"monospace",fontSize:12,color:C.textDim}}>elbaraa.dev</span>
+        <span style={{fontFamily:"monospace",fontSize:12,color:C.textDim}}>elbaraa.me</span>
       </button>
       <div style={{display:"flex",gap:10,alignItems:"center"}}>
         <button
@@ -381,9 +381,9 @@ export function BackToTop({ goTo, C }) {
 
 export function Footer({ C }) {
   return (
-    <footer style={{padding:"22px 60px",background:`${C.bg}E6`,backdropFilter:"blur(16px)",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,position:"relative",zIndex:100}}>
-      <span style={{fontFamily:"monospace",fontSize:11,color:C.textPrimary,opacity:0.6}}>elbaraa.dev</span>
-      <span style={{fontFamily:"monospace",fontSize:11,color:C.textPrimary,opacity:0.6}}>© 2025 Elbaraa Abdalla</span>
+    <footer style={{padding:"22px 60px",background:`${C.bg}E6`,backdropFilter:"blur(16px)",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,position:"relative",zIndex:400}}>
+      <span style={{fontFamily:"monospace",fontSize:11,color:C.textPrimary,opacity:0.6}}>elbaraa.me</span>
+      <span style={{fontFamily:"monospace",fontSize:11,color:C.textPrimary,opacity:0.6}}>© 2026 Elbaraa Abdalla</span>
       <div style={{display:"flex",alignItems:"center",gap:7,fontFamily:"monospace",fontSize:11,color:C.textPrimary,opacity:0.6}}>
         <div style={{width:6,height:6,borderRadius:"50%",background:C.green,opacity:1,animation:"pulse 2s infinite"}}/>All systems operational
       </div>
