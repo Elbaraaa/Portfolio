@@ -56,20 +56,21 @@ export function HeroSection({ onMenu, onHire, C }) {
     return () => clearInterval(t);
   }, []);
 
+
   const socialLinks = [
     {
       label: "Email",
-      href: "mailto:baraa@email.arizona.edu",
+      href: "mailto:elbaraaa@.arizona.edu",
       icon: EmailIcon
     },
     {
       label: "GitHub",
-      href: "https://github.com/baraaabdalla",
+      href: "https://github.com/Elbaraaa",
       icon: GitHubIcon
     },
     {
       label: "LinkedIn",
-      href: "https://linkedin.com/in/baraaabdalla",
+      href: "https://www.linkedin.com/in/elbaraa-abdalla-a0746728a/",
       icon: LinkedInIcon
     }
   ];
