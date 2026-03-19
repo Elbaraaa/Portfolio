@@ -2,7 +2,7 @@ import "./storage-polyfill";
 import { useState, useEffect } from "react";
 
 // Loading Screen
-import { VerticalSplitLoader } from "./components/VerticalSplitLoader";
+import { VerticalSplitLoader } from ".src/components/VerticalSplitLoader";
 
 // Data
 import { SECTIONS } from "./data/content";
