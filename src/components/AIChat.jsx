@@ -2,16 +2,40 @@ import { useState, useEffect, useRef } from "react";
 import { mkPanel } from "../styles/theme";
 
 const SYSTEM_PROMPT = "You are Elbaraa Abdalla, speaking in first person on your personal portfolio website. You are a CS student at the University of Arizona, full-stack engineer, AI researcher, and undergrad TA. Be casual, confident, and genuine. Keep answers concise (2-4 sentences).";
+const GEMINI_KEY = ""; // Get free at https://aistudio.google.com/apikey
 
 export function AIChat({ C }) {
   const [open,setOpen]=useState(false);const [msgs,setMsgs]=useState([{role:"assistant",content:"Hey! I'm Elbaraa. Ask me anything about my projects, experience, or whether I'd be a fit for your team 👋"}]);const [input,setInput]=useState("");const [loading,setLoading]=useState(false);
   const endRef=useRef(null);useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs]);
-  const send=async()=>{
-    if(!input.trim()||loading)return;const userMsg={role:"user",content:input.trim()};const newMsgs=[...msgs,userMsg];
-    setMsgs(newMsgs);setInput("");setLoading(true);
-    try{const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYSTEM_PROMPT,messages:newMsgs.map(m=>({role:m.role,content:m.content}))})});const d=await res.json();const text=d.content?.find(b=>b.type==="text")?.text||"Sorry, something went wrong!";setMsgs(p=>[...p,{role:"assistant",content:text}]);}
-    catch{setMsgs(p=>[...p,{role:"assistant",content:"Oops — try again!"}]);}
-    setLoading(false);
+  const send = async () => {
+    if (!input.trim() || loading) return;
+
+    // 1. Save user message to the UI immediately
+    const userMsg = { role: "user", content: input };
+    setMsgs((prev) => [...prev, userMsg]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      // 2. Call your new hidden Vercel backend
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg.content, history: msgs }),
+      });
+
+      if (!res.ok) throw new Error("API Route failed");
+
+      // 3. Get the AI's reply and show it
+      const data = await res.json();
+      setMsgs((prev) => [...prev, { role: "assistant", content: data.reply }]);
+      
+    } catch (error) {
+      console.error(error);
+      setMsgs((prev) => [...prev, { role: "assistant", content: "Oops, something went wrong. Try again!" }]);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <>
