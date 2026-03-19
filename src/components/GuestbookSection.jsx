@@ -222,8 +222,11 @@ export function GuestbookSection({ C }) {
       if (e.key === "Escape") closeSignatureModal();
     };
 
+    let lastScrollY = window.scrollY;
     const handleScrollClose = () => {
-      closeSignatureModal();
+      if (Math.abs(window.scrollY - lastScrollY) > 100) {
+        closeSignatureModal();
+      }
     };
 
     const timer = setTimeout(() => {
