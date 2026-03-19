@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { mkPanel } from "../styles/theme";
+import { useWindowWidth } from "../hooks/useInView";
 
 export function AIChat({ C }) {
   const [open, setOpen] = useState(false);
@@ -16,11 +17,32 @@ export function AIChat({ C }) {
   const chatBoxRef = useRef(null);
   const overlayRef = useRef(null);
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 767;
+  const width = useWindowWidth();
+  const isMobile = width > 0 && width <= 767;
+  const [viewportH, setViewportH] = useState(typeof window !== "undefined" ? window.innerHeight : 0);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
+
+  /* ── Track visual viewport for keyboard-aware layout (Instagram style) ── */
+  useEffect(() => {
+    if (!open || !isMobile) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const onResize = () => {
+      setViewportH(vv.height);
+      /* Keep messages scrolled to bottom when keyboard opens */
+      requestAnimationFrame(() => {
+        endRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
+    };
+
+    onResize();
+    vv.addEventListener("resize", onResize);
+    return () => vv.removeEventListener("resize", onResize);
+  }, [open, isMobile]);
 
   /* ── Scroll lock on mobile when chat is open ── */
   useEffect(() => {
@@ -133,7 +155,7 @@ export function AIChat({ C }) {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                zIndex: 9998,
+                zIndex: 9888,
                 background: "rgba(0,0,0,0.5)",
                 backdropFilter: "blur(8px)",
                 WebkitBackdropFilter: "blur(8px)",
@@ -147,18 +169,18 @@ export function AIChat({ C }) {
             ref={chatBoxRef}
             style={{
               position: "fixed",
-              zIndex: 9999,
+              zIndex: 9888,
               animation: "scaleIn 0.2s ease-out",
               ...(isMobile
                 ? {
                     top: 0,
                     left: 0,
                     right: 0,
-                    bottom: 0,
                     width: "100%",
-                    height: "100dvh",
+                    height: viewportH,
                     display: "flex",
                     flexDirection: "column",
+                    transition: "height 0.1s ease-out",
                   }
                 : {
                     bottom: 86,

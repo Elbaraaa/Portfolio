@@ -5,3 +5,4 @@ build/
 .env
 SuggestionsAndFixes.txt
 SuggestionsAndFixes.md
+.vercel
