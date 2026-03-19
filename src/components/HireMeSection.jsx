@@ -21,7 +21,8 @@ export function HireMeSection({ C }) {
     setErr("");
 
     try {
-      const res = await fetch("https://formspree.io/f/YOUR_FORMSPREE_ID", {
+      const FormspreeId = process.env.REACT_APP_FORMSPREE_ID;
+      const res = await fetch(`https://formspree.io/f/${FormspreeId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(form)
