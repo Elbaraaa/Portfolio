@@ -216,7 +216,7 @@ export function HeroSection({ onMenu, onHire, C }) {
               cursor: "pointer",
               fontWeight: 700
             }}
-            onClick={() => alert("📄 Resume link coming soon!")}
+            onClick={() => window.open("/Elbaraa_Abdalla_resume.pdf", "_blank")}
           >
             📄 Download Resume
           </button>
@@ -433,7 +433,7 @@ export function HeroSection({ onMenu, onHire, C }) {
           </button>
 
           <button
-            onClick={() => alert("📄 Resume link coming soon!")}
+            onClick={() => window.open("/Elbaraa_Abdalla_resume.pdf", "_blank")}
             style={{
               display: isTightHero ? "inline-flex" : "none",
               alignItems: "center",
