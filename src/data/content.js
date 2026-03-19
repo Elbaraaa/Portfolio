@@ -1,7 +1,7 @@
 export const personal = {
   name: "Elbaraa Abdalla",
   subTagline: "CS @ University of Arizona · Full-Stack · Systems · AI",
-  bio: "I build software that solves real problems — whether that's an AI-powered academic planning platform, a crawler that audits thousands of university pages, or production-facing web systems for the University of Arizona.\n\nCurrently, I'm an IT Web Analyst with UITS, a Web Developer with the Office of Research and Partnerships, and an undergraduate teaching assistant supporting software development and object-oriented programming courses.",
+  bio: "I build software that solves real problems — whether that's an AI-powered academic planning platform, a crawler that audits thousands of university pages, or production-facing web systems for the University of Arizona.\n\nCurrently, I'm an IT Web Analyst with UITS, a Web Developer with the Office of Research and Partnerships, and an undergraduate teaching assistant supporting object-oriented programming course.",
   email: "elbaraaa@arizona.edu",
   github: "https://github.com/Elbaraaa",
   linkedin: "https://www.linkedin.com/in/elbaraa-abdalla-a0746728a/",
@@ -9,9 +9,9 @@ export const personal = {
 };
 
 export const stats = [
-  { label: "Students Mentored", value: "100+" },
+  { label: "Students Mentored", value: "200+" },
   { label: "Pages Link-Audited", value: "4,000+" },
-  { label: "University Pages Updated", value: "50+" },
+  { label: "University Pages Updated", value: "500+" },
   { label: "Project Showcase Audience", value: "150+" },
 ];
 
@@ -176,6 +176,122 @@ export const projects = [
     metrics: ["Persistent cart", "Authentication flows", "Dynamic rendering"],
     accent: "#FFB347",
   },
+  // {
+  //   title: "Interactive Weather Query System",
+  //   accent: "#7C6FFF",
+  //   description:
+  //     "Interactive Java application that connects to an Oracle database using JDBC to run multi-year weather analysis queries across historical datasets.",
+  //   stack: ["Java", "JDBC", "Oracle SQL", "SQL"],
+  //   bullets: [
+  //     "Built a query-driven CLI for average temperatures, precipitation rankings, temperature-difference analysis, and threshold-based filtering.",
+  //     "Implemented complex SQL across 2012, 2016, 2020, and 2024 datasets using UNION ALL, parameterized conditions, and dynamic thresholds.",
+  //     "Designed formatted tabular output with real-time user input and dataset selection."
+  //   ]
+  // },
+
+  // {
+  //   title: "TCP Client–Server Messaging System",
+  //   accent: "#4AFFC4",
+  //   description:
+  //     "Low-level client-server messaging system in C using TCP sockets and a custom protocol for reliable message exchange.",
+  //   stack: ["C", "TCP Sockets", "Networking", "Systems Programming"],
+  //   bullets: [
+  //     "Built both client and server programs for transmitting message lengths and payloads over TCP.",
+  //     "Implemented payload parsing, connection handling, network byte-order conversion, and buffer management.",
+  //     "Added robust input validation and error checking for stable real-time communication."
+  //   ]
+  // },
+
+  // {
+  //   title: "Binary Search Tree in MIPS Assembly",
+  //   accent: "#F97FFF",
+  //   description:
+  //     "MIPS assembly implementation of binary search tree operations with direct memory management and pointer-level logic.",
+  //   stack: ["MIPS Assembly", "Mars Simulator", "Data Structures", "Low-Level Programming"],
+  //   bullets: [
+  //     "Programmed BST initialization, traversal, insertion, and deletion in MIPS assembly.",
+  //     "Applied low-level memory allocation, pointer arithmetic, and memory management concepts.",
+  //     "Translated high-level data structure logic into efficient assembly instructions."
+  //   ]
+  // },
+
+  // {
+  //   title: "2048 Game – JavaFX Application",
+  //   accent: "#63D1FF",
+  //   description:
+  //     "Interactive JavaFX implementation of 2048 using object-oriented design and event-driven programming.",
+  //   stack: ["Java", "JavaFX", "OOP", "Git"],
+  //   bullets: [
+  //     "Implemented real-time tile movement, merging logic, score updates, and game-state management.",
+  //     "Used object-oriented design and efficient data structures to support gameplay behavior.",
+  //     "Collaborated in an Agile workflow with Git-based version control for iterative development."
+  //   ]
+  // },
+
+  // {
+  //   title: "Java-Based Personal Library System",
+  //   accent: "#8BE28B",
+  //   description:
+  //     "Java application for managing a personal library with search, add, and retrieval functionality built around object-oriented design principles.",
+  //   stack: ["Java", "OOP", "File Handling", "Testing"],
+  //   bullets: [
+  //     "Collaborated with a partner to build a personal library management system in Java.",
+  //     "Applied encapsulation and abstraction to implement searching, adding books, and retrieving lists.",
+  //     "Performed extensive debugging and testing to ensure correct file handling and input validation."
+  //   ]
+  // },
+
+  // {
+  //   title: "Extendible Hashing Index for Binary Databases",
+  //   accent: "#FFD166",
+  //   description:
+  //     "Dynamic extendible hashing index in Java for fast suffix-based lookups over binary landfill records.",
+  //   stack: ["Java", "RandomAccessFile", "Hashing", "Binary Files"],
+  //   bullets: [
+  //     "Implemented bucket splitting, directory doubling, and custom hash functions for dynamic indexing.",
+  //     "Built fixed-width bucket serialization with padded ASCII fields and efficient RandomAccessFile access.",
+  //     "Developed a search engine that scans hashed buckets, reconstructs records on demand, and returns matching offsets."
+  //   ]
+  // },
+
+  // {
+  //   title: "Landfill Data Binary Serialization & Search Engine",
+  //   accent: "#FF8A8A",
+  //   description:
+  //     "Java system for converting structured landfill CSV data into fixed-width binary files and querying records efficiently.",
+  //   stack: ["Java", "CSV Parsing", "RandomAccessFile", "Binary Serialization"],
+  //   bullets: [
+  //     "Converted structured landfill datasets from CSV into fixed-width binary storage for efficient retrieval.",
+  //     "Designed a custom binary serialization format using padded ASCII fields, binary primitives, and appended schema metadata.",
+  //     "Built a companion program for parsing the binary file, extracting middle records, recent-closure analysis, and ternary-search lookups."
+  //   ]
+  // },
+
+  // {
+  //   title: "Single-Cycle CPU",
+  //   accent: "#A79DFF",
+  //   description:
+  //     "Single-cycle CPU implementation focused on MIPS instruction decoding, execution, and control-logic validation.",
+  //   stack: ["C", "Computer Architecture", "MIPS", "Systems"],
+  //   bullets: [
+  //     "Implemented MIPS instruction decoding and execution, including support for custom instructions.",
+  //     "Designed control logic for ALU operations, memory access, and branching behavior.",
+  //     "Ran system-level tests to validate correctness across instruction and memory workflows."
+  //   ]
+  // },
+
+  // {
+  //   title: "Java Data Structures Library with Memory Pooling",
+  //   accent: "#4ECDC4",
+  //   description:
+  //     "Custom Java data structures library with a doubly linked list allocator that reuses node blocks for efficient dynamic allocation.",
+  //   stack: ["Java", "Data Structures", "Memory Management", "OOP"],
+  //   bullets: [
+  //     "Engineered a doubly linked list implementation with internal memory pooling for low-overhead allocation.",
+  //     "Designed a unified interface supporting stacks, queues, and deques through safe handle-based operations.",
+  //     "Implemented in-place reversal, destructive concatenation, O(1) clearing, and structural list manipulation without unnecessary garbage creation."
+  //   ]
+  // }
 ];
 
 export const skillCategories = [

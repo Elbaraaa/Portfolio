@@ -174,7 +174,7 @@ export function AboutSection({ C }) {
             {[
               { icon: "⌨️", label: "Engineer", desc: "Full-stack systems from DB to UI." },
               { icon: "🧠", label: "Researcher", desc: "Applied AI, RAG pipelines & knowledge systems." },
-              { icon: "👥", label: "Educator", desc: "Helped 500+ students level up." },
+              { icon: "👥", label: "Educator", desc: "Helped 200+ students level up." },
               { icon: "🚀", label: "Builder", desc: "Real tools used by real people." }
             ].map((p) => (
               <div key={p.label} style={cardStyle}>
@@ -257,7 +257,7 @@ export function AboutSection({ C }) {
                       background: `linear-gradient(135deg,${C.accent},${C.green})`
                     }}
                   >
-                    3.9
+                    3.7
                   </div>
                   <div
                     style={{
