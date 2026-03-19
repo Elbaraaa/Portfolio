@@ -39,6 +39,24 @@ function LinkedInIcon({ color = "currentColor", size = 16 }) {
   );
 }
 
+function PreviewIcon({ size = 16, color = "currentColor" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
 /* ─── Resume data ─── */
 const resume = {
   name: "ELBARAA ABDALLA",
@@ -251,6 +269,39 @@ function ResumeViewer({ onClose, C }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <a
               href="/Elbaraa_Abdalla_resume.pdf"
+              target="/Elbaraa_Abdalla_resume.pdf"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "5px 14px",
+                borderRadius: 6,
+                background: `${C.green}12`,
+                border: `1px solid ${C.green}25`,
+                color: C.green,
+                fontFamily: mono,
+                fontSize: 11,
+                cursor: "pointer",
+                fontWeight: 600,
+                textDecoration: "none",
+                transition: "all 0.15s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = `${C.green}22`;
+                e.currentTarget.style.borderColor = `${C.green}50`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = `${C.green}12`;
+                e.currentTarget.style.borderColor = `${C.green}25`;
+              }}
+            >
+              <PreviewIcon size={12} color={C.green} />
+              Preview PDF
+            </a>
+
+            <a
+              href="/resume.pdf"
               download="Elbaraa_Abdalla_resume.pdf"
               style={{
                 display: "inline-flex",
