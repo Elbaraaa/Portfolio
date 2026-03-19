@@ -269,7 +269,7 @@ function ResumeViewer({ onClose, C }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <a
               href="/Elbaraa_Abdalla_resume.pdf"
-              target="/Elbaraa_Abdalla_resume.pdf"
+              target="_blank"
               rel="noopener noreferrer"
               style={{
                 display: "inline-flex",
@@ -301,7 +301,7 @@ function ResumeViewer({ onClose, C }) {
             </a>
 
             <a
-              href="/resume.pdf"
+              href="/Elbaraa_Abdalla_resume.pdf"
               download="Elbaraa_Abdalla_resume.pdf"
               style={{
                 display: "inline-flex",
