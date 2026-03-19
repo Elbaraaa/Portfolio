@@ -1,6 +1,9 @@
 import "./storage-polyfill";
 import { useState, useEffect } from "react";
 
+// Loading Screen
+import { VerticalSplitLoader } from "./components/VerticalSplitLoader";
+
 // Data
 import { SECTIONS } from "./data/content";
 
@@ -34,6 +37,7 @@ import { HireMeSection } from "./components/HireMeSection";
 export default function Portfolio() {
   const [terminal, setTerminal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
   // const { current, goTo } = useSectionSnap();
   const [current, setCurrent] = useState(0);
   const goTo = (index) => {
@@ -46,6 +50,7 @@ export default function Portfolio() {
   };
   const [darkMode, setDarkMode] = useState(true);
   const [touchActive, setTouchActive] = useState(false);
+  const [loading, setLoading] = useState(true);
   const C = darkMode ? DARK : LIGHT;
 
   useEffect(() => {
@@ -122,6 +127,7 @@ export default function Portfolio() {
         transition: "background 0.4s, color 0.4s"
       }}
     >
+      {loading && <VerticalSplitLoader C={C} isDark={darkMode} onComplete={() => setLoading(false)} />}
       <style>{globalCSS}</style>
       <style>{`
         ::-webkit-scrollbar-track{background:${C.bg}}
