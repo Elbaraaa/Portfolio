@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { personal, stats } from "../data/content";
 import { mkPanel } from "../styles/theme";
 import { Typewriter } from "./ui";
@@ -153,7 +153,6 @@ function DownloadIcon({ size = 16, color = "currentColor" }) {
 
 /* ─── Resume Viewer Modal (theme-aware) ─── */
 function ResumeViewer({ onClose, C }) {
-  const mobileTopGap = 72;
   const overlayRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const isLight = C.bg === "#F6F2E8";
@@ -164,9 +163,31 @@ function ResumeViewer({ onClose, C }) {
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
-    document.body.style.overflow = "hidden";
+
+    /* ── Robust scroll lock (works on iOS Safari + Android + desktop) ── */
+    const scrollY = window.scrollY;
+    const html = document.documentElement;
+    const body = document.body;
+
+    /* Save current scroll position and pin the body in place */
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+
     return () => {
-      document.body.style.overflow = "";
+      /* Restore everything and jump back to where the user was */
+      html.style.overflow = "";
+      body.style.overflow = "";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      window.scrollTo(0, scrollY);
     };
   }, []);
 
@@ -174,6 +195,13 @@ function ResumeViewer({ onClose, C }) {
     setVisible(false);
     setTimeout(onClose, 300);
   };
+
+  /* Block touch-scroll that lands on the backdrop (not the modal content) */
+  const handleOverlayTouchMove = useCallback((e) => {
+    if (e.target === overlayRef.current) {
+      e.preventDefault();
+    }
+  }, []);
 
   const mono = "'SF Mono', 'Fira Code', 'Cascadia Code', monospace";
 
@@ -197,39 +225,41 @@ function ResumeViewer({ onClose, C }) {
   );
 
   return (
-      <div
-        ref={overlayRef}
-        onClick={(e) => e.target === overlayRef.current && handleClose()}
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 1800,
-          background: visible
-            ? isLight
-              ? "rgba(255,255,255,0.6)"
-              : "rgba(0,0,0,0.78)"
-            : "rgba(0,0,0,0)",
-          backdropFilter: visible ? "blur(16px)" : "blur(0px)",
-          WebkitBackdropFilter: visible ? "blur(16px)" : "blur(0px)",
-          display: "flex",
-          justifyContent: "center",
-          transition: "all 0.3s ease",
-          alignItems: isMobile ? "flex-start" : "center",
-          padding: isMobile ? `${mobileTopGap}px 8px 8px` : "16px",
-          boxSizing: "border-box",
-          overflow: "hidden",
-        }}
-      > 
+    <div
+      ref={overlayRef}
+      onClick={(e) => e.target === overlayRef.current && handleClose()}
+      onTouchMove={handleOverlayTouchMove}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 2000,
+        background: visible
+          ? isLight
+            ? "rgba(255,255,255,0.6)"
+            : "rgba(0,0,0,0.78)"
+          : "rgba(0,0,0,0)",
+        backdropFilter: visible ? "blur(16px)" : "blur(0px)",
+        WebkitBackdropFilter: visible ? "blur(16px)" : "blur(0px)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        transition: "all 0.3s ease",
+        padding: isMobile ? "12px 8px" : "16px",
+        boxSizing: "border-box",
+        overscrollBehavior: "contain",
+      }}
+    >
       <div
         style={{
           width: "100%",
           maxWidth: 700,
-          height: window.innerWidth <= 767 ? "calc(100dvh - 16px)" : "auto",
-          maxHeight: window.innerWidth <= 767 ? "calc(100dvh - 16px)" : "92vh",
-          marginTop: window.innerWidth <= 767 ? "0" : undefined,
+          maxHeight: isMobile ? "calc(100dvh - 24px)" : "92vh",
           background: C.surface,
           border: `1px solid ${C.border}`,
-          borderRadius: window.innerWidth <= 767 ? 10 : 14,
+          borderRadius: isMobile ? 10 : 14,
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
@@ -237,23 +267,25 @@ function ResumeViewer({ onClose, C }) {
           opacity: visible ? 1 : 0,
           transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
           boxShadow: isLight
-            ? `0 24px 64px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)`
+            ? "0 24px 64px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)"
             : `0 0 100px ${C.accent}08, 0 32px 64px rgba(0,0,0,0.6)`,
         }}
       >
+        {/* ── Title bar ── */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "12px 18px",
-            background: isLight ? `${C.bg}` : C.bg,
+            padding: isMobile ? "10px 12px" : "12px 18px",
+            background: isLight ? C.bg : C.bg,
             borderBottom: `1px solid ${C.border}`,
             flexShrink: 0,
+            gap: 8,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ display: "flex", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
               <div
                 onClick={handleClose}
                 style={{
@@ -267,12 +299,23 @@ function ResumeViewer({ onClose, C }) {
               <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#febc2e" }} />
               <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#28c840" }} />
             </div>
-            <span style={{ fontFamily: mono, fontSize: 12, color: modalTextDim, marginLeft: 4 }}>
-              Elbaraa_Abdalla_resume.pdf
+            <span
+              style={{
+                fontFamily: mono,
+                fontSize: isMobile ? 10 : 12,
+                color: modalTextDim,
+                marginLeft: 4,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {isMobile ? "resume.pdf" : "Elbaraa_Abdalla_resume.pdf"}
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            {/* On mobile: icon-only buttons to save horizontal space */}
             <a
               href="/Elbaraa_Abdalla_resume.pdf"
               target="_blank"
@@ -281,7 +324,7 @@ function ResumeViewer({ onClose, C }) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                padding: "5px 14px",
+                padding: isMobile ? "6px 8px" : "5px 14px",
                 borderRadius: 6,
                 background: `${C.green}12`,
                 border: `1px solid ${C.green}25`,
@@ -303,7 +346,7 @@ function ResumeViewer({ onClose, C }) {
               }}
             >
               <PreviewIcon size={12} color={C.green} />
-              Preview PDF
+              {!isMobile && "Preview PDF"}
             </a>
 
             <a
@@ -313,7 +356,7 @@ function ResumeViewer({ onClose, C }) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                padding: "5px 14px",
+                padding: isMobile ? "6px 8px" : "5px 14px",
                 borderRadius: 6,
                 background: `${C.accent}12`,
                 border: `1px solid ${C.accent}25`,
@@ -335,7 +378,7 @@ function ResumeViewer({ onClose, C }) {
               }}
             >
               <DownloadIcon size={12} color={C.accent} />
-              Download PDF
+              {!isMobile && "Download PDF"}
             </a>
 
             <button
@@ -367,15 +410,17 @@ function ResumeViewer({ onClose, C }) {
           </div>
         </div>
 
+        {/* ── Scrollable resume body ── */}
         <div
           style={{
             overflowY: "auto",
             flex: 1,
             minHeight: 0,
-            padding: window.innerWidth <= 767 ? "18px 16px 24px" : "24px 28px 30px",
+            padding: isMobile ? "18px 16px 24px" : "24px 28px 30px",
             color: C.textPrimary,
             background: C.surface,
             WebkitOverflowScrolling: "touch",
+            overscrollBehavior: "contain",
           }}
         >
           <div style={{ textAlign: "center", marginBottom: 18 }}>
@@ -386,7 +431,7 @@ function ResumeViewer({ onClose, C }) {
                 width: "fit-content",
                 maxWidth: "100%",
                 lineHeight: 1.08,
-                fontSize: 26,
+                fontSize: isMobile ? 22 : 26,
                 fontWeight: 800,
                 letterSpacing: "-0.025em",
                 color: C.accent,
@@ -398,7 +443,7 @@ function ResumeViewer({ onClose, C }) {
             <p
               style={{
                 fontFamily: mono,
-                fontSize: 11,
+                fontSize: isMobile ? 10 : 11,
                 color: modalTextSecondary,
                 margin: "6px 0 4px",
                 lineHeight: 1.7,
@@ -407,9 +452,9 @@ function ResumeViewer({ onClose, C }) {
               {resume.contact}
             </p>
 
-            <div style={{ display: "flex", justifyContent: "center", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: isMobile ? 10 : 14, flexWrap: "wrap" }}>
               {resume.links.map((l) => (
-                <span key={l} style={{ fontFamily: mono, fontSize: 11, color: C.accent, opacity: 0.85 }}>
+                <span key={l} style={{ fontFamily: mono, fontSize: isMobile ? 10 : 11, color: C.accent, opacity: 0.85 }}>
                   {l}
                 </span>
               ))}
