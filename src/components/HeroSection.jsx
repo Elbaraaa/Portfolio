@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { personal, stats } from "../data/content";
 import { mkPanel } from "../styles/theme";
 import { Typewriter } from "./ui";
@@ -39,8 +39,559 @@ function LinkedInIcon({ color = "currentColor", size = 16 }) {
   );
 }
 
+/* ─── Resume data ─── */
+const resume = {
+  name: "ELBARAA ABDALLA",
+  contact: "+1 (520) 440-6905 · elbaraaa@arizona.edu · Tucson, AZ",
+  links: ["linkedin.com/in/elbaraa-abdalla", "github.com/elbaraaa", "elbaraa.me"],
+  education: {
+    school: "University of Arizona",
+    date: "August 2022 – May 2026",
+    degree: "Bachelor of Science in Computer Science",
+    gpa: "GPA: 3.7",
+  },
+  skills: [
+    { cat: "Languages", items: "Java, Python, C/C++, JavaScript, SQL, C#, MIPS" },
+    { cat: "Web/Backend", items: "HTML, CSS, React.js, Node.js, REST APIs, Drupal, WordPress, JDBC, PHP" },
+    { cat: "Databases/Tools", items: "Oracle SQL, PostgreSQL, SQL Server, Git, Linux/Unix, Vim, Emacs" },
+    { cat: "AI Workflow", items: "GitHub Copilot, ChatGPT, Gemini, Claude" },
+  ],
+  experience: [
+    {
+      title: "IT Web Analyst",
+      org: "University Information Technology Services (UITS), University of Arizona",
+      date: "July 2025 – Present",
+      bullets: [
+        "Reviewed and remediated 1000+ university web pages migrated from Drupal and WordPress, ensuring accessibility compliance.",
+        "Resolved content defects, formatting issues, and inconsistencies across migrated pages.",
+      ],
+    },
+    {
+      title: "Web Developer",
+      org: "Office of Research and Partnerships (ORP), University of Arizona",
+      date: "May 2024 – Present",
+      bullets: [
+        "Cut deployment time by 85% by creating a Bash automation script replacing manual maintenance steps.",
+        "Developed interactive UI features, backend modules, and API integrations with JavaScript, HTML, CSS, and Drupal.",
+        "Built a crawler that scanned 4,000+ pages to address broken-link issues across the ORP website.",
+      ],
+    },
+    {
+      title: "Undergraduate Teaching Assistant",
+      org: "Department of Computer Science, University of Arizona",
+      date: "Aug 2024 – Dec 2024, Jan 2026 – Present",
+      bullets: [
+        "Supported 100+ students in CSC 210 and CSC 335 through office hours and technical guidance in Java, OOP, and data structures.",
+        "Graded programming assignments, applying rubrics and delivering feedback on correctness, code quality, and design.",
+      ],
+    },
+    {
+      title: "Undergraduate Research Assistant",
+      org: "Vertically Integrated Projects (VIP), University of Arizona",
+      date: "Jan 2024 – May 2024",
+      bullets: [
+        "Developed SafeDrive-AI, a CNN-based real-time distracted driving detection system classifying driver behavior into five categories.",
+        "Presented the project's design and real-world safety value to 150+ attendees at IShowcase.",
+      ],
+    },
+  ],
+  projects: [
+    {
+      name: "MajorLyte (UA DegreePlan Copilot)",
+      tag: "Hackathon Winner",
+      bullets: [
+        "Built an AI-powered academic planning platform using the Gemini API to help students navigate degree requirements.",
+        "Won First Place and Best Use of Gemini API at Hack Arizona.",
+        "Continuing development beyond the hackathon toward launch.",
+      ],
+    },
+    {
+      name: "Full-Stack Online Bookstore Web Application",
+      tag: null,
+      bullets: [
+        "Built a full-stack online bookstore using JavaScript, HTML, CSS, and RESTful server routes with dynamic rendering and auth.",
+        "Developed client-side session workflows with localStorage, cart synchronization, and login-gated actions.",
+      ],
+    },
+  ],
+};
+
+/* ─── SVG icons for the viewer ─── */
+function CloseIcon({ size = 20, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+function DownloadIcon({ size = 16, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+    </svg>
+  );
+}
+
+/* ─── Resume Viewer Modal (theme-aware) ─── */
+function ResumeViewer({ onClose, C }) {
+  const overlayRef = useRef(null);
+  const [visible, setVisible] = useState(false);
+  const isLight = C.bg === "#F6F2E8";
+
+  const modalTextSecondary = isLight ? "#5f584f" : C.textSecondary;
+  const modalTextDim = isLight ? "#746c62" : C.textDim;
+
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true));
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(onClose, 300);
+  };
+
+  const mono = "'SF Mono', 'Fira Code', 'Cascadia Code', monospace";
+
+  const SectionTitle = ({ children }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "22px 0 12px" }}>
+      <span
+        style={{
+          fontFamily: mono,
+          fontSize: 11,
+          textTransform: "uppercase",
+          letterSpacing: "0.12em",
+          color: C.accent,
+          fontWeight: 700,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {children}
+      </span>
+      <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${C.accent}40, transparent)` }} />
+    </div>
+  );
+
+  return (
+    <div
+      ref={overlayRef}
+      onClick={(e) => e.target === overlayRef.current && handleClose()}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1800,
+        background: visible
+          ? isLight
+            ? "rgba(255,255,255,0.6)"
+            : "rgba(0,0,0,0.78)"
+          : "rgba(0,0,0,0)",
+        backdropFilter: visible ? "blur(16px)" : "blur(0px)",
+        WebkitBackdropFilter: visible ? "blur(16px)" : "blur(0px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.3s ease",
+        padding: 16,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 700,
+          maxHeight: "92vh",
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          borderRadius: 14,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          transform: visible ? "translateY(0) scale(1)" : "translateY(40px) scale(0.96)",
+          opacity: visible ? 1 : 0,
+          transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
+          boxShadow: isLight
+            ? `0 24px 64px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)`
+            : `0 0 100px ${C.accent}08, 0 32px 64px rgba(0,0,0,0.6)`,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 18px",
+            background: isLight ? `${C.bg}` : C.bg,
+            borderBottom: `1px solid ${C.border}`,
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", gap: 6 }}>
+              <div
+                onClick={handleClose}
+                style={{
+                  width: 11,
+                  height: 11,
+                  borderRadius: "50%",
+                  background: "#ff5f57",
+                  cursor: "pointer",
+                }}
+              />
+              <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#febc2e" }} />
+              <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#28c840" }} />
+            </div>
+            <span style={{ fontFamily: mono, fontSize: 12, color: modalTextDim, marginLeft: 4 }}>
+              Elbaraa_Abdalla_resume.pdf
+            </span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <a
+              href="/Elbaraa_Abdalla_resume.pdf"
+              download="Elbaraa_Abdalla_resume.pdf"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "5px 14px",
+                borderRadius: 6,
+                background: `${C.accent}12`,
+                border: `1px solid ${C.accent}25`,
+                color: C.accent,
+                fontFamily: mono,
+                fontSize: 11,
+                cursor: "pointer",
+                fontWeight: 600,
+                textDecoration: "none",
+                transition: "all 0.15s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = `${C.accent}22`;
+                e.currentTarget.style.borderColor = `${C.accent}50`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = `${C.accent}12`;
+                e.currentTarget.style.borderColor = `${C.accent}25`;
+              }}
+            >
+              <DownloadIcon size={12} color={C.accent} />
+              Download PDF
+            </a>
+
+            <button
+              onClick={handleClose}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 30,
+                height: 30,
+                borderRadius: 7,
+                background: "transparent",
+                border: `1px solid ${C.border}`,
+                color: modalTextDim,
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "#ff5f57";
+                e.currentTarget.style.color = "#ff5f57";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = C.border;
+                e.currentTarget.style.color = modalTextDim;
+              }}
+            >
+              <CloseIcon size={15} />
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
+            overflowY: "auto",
+            padding: "24px 28px 30px",
+            color: C.textPrimary,
+            background: C.surface,
+          }}
+        >
+          <div style={{ textAlign: "center", marginBottom: 18 }}>
+            <h2
+              style={{
+                margin: 0,
+                display: "inline-block",
+                width: "fit-content",
+                maxWidth: "100%",
+                lineHeight: 1.08,
+                fontSize: 26,
+                fontWeight: 800,
+                letterSpacing: "-0.025em",
+                color: C.accent,
+              }}
+            >
+              {resume.name}
+            </h2>
+
+            <p
+              style={{
+                fontFamily: mono,
+                fontSize: 11,
+                color: modalTextSecondary,
+                margin: "6px 0 4px",
+                lineHeight: 1.7,
+              }}
+            >
+              {resume.contact}
+            </p>
+
+            <div style={{ display: "flex", justifyContent: "center", gap: 14, flexWrap: "wrap" }}>
+              {resume.links.map((l) => (
+                <span key={l} style={{ fontFamily: mono, fontSize: 11, color: C.accent, opacity: 0.85 }}>
+                  {l}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <SectionTitle>Education</SectionTitle>
+          <div
+            style={{
+              padding: "10px 14px",
+              background: isLight ? `${C.accent}06` : `${C.accent}04`,
+              borderRadius: 8,
+              border: `1px solid ${C.border}`,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                flexWrap: "wrap",
+                gap: 4,
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: 14, color: C.textPrimary }}>
+                {resume.education.school}
+              </span>
+              <span style={{ fontFamily: mono, fontSize: 11, color: modalTextDim }}>
+                {resume.education.date}
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 4,
+                marginTop: 3,
+              }}
+            >
+              <span style={{ fontSize: 13, color: modalTextSecondary }}>
+                {resume.education.degree}
+              </span>
+              <span
+                style={{
+                  fontFamily: mono,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "1px 8px",
+                  borderRadius: 4,
+                  background: `${C.green}15`,
+                  color: C.green,
+                  border: `1px solid ${C.green}25`,
+                }}
+              >
+                {resume.education.gpa}
+              </span>
+            </div>
+          </div>
+
+          <SectionTitle>Technical Skills</SectionTitle>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {resume.skills.map((s) => (
+              <div key={s.cat} style={{ fontSize: 13, lineHeight: 1.65 }}>
+                <span style={{ color: C.accent, fontWeight: 700, fontFamily: mono, fontSize: 11 }}>
+                  {s.cat}:{" "}
+                </span>
+                <span style={{ color: modalTextSecondary }}>{s.items}</span>
+              </div>
+            ))}
+          </div>
+
+          <SectionTitle>Professional Experience</SectionTitle>
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            {resume.experience.map((exp, idx) => (
+              <div
+                key={idx}
+                style={{
+                  position: "relative",
+                  paddingLeft: 16,
+                  borderLeft: `2px solid ${C.accent}20`,
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    left: -5,
+                    top: 4,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: C.surface,
+                    border: `2px solid ${C.accent}60`,
+                  }}
+                />
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    flexWrap: "wrap",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontWeight: 700, fontSize: 14, color: C.textPrimary }}>
+                    {exp.title}
+                  </span>
+                  <span style={{ fontFamily: mono, fontSize: 10, color: modalTextDim }}>
+                    {exp.date}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: modalTextSecondary,
+                    fontStyle: "italic",
+                    marginBottom: 6,
+                    opacity: 0.9,
+                  }}
+                >
+                  {exp.org}
+                </div>
+
+                <ul style={{ margin: 0, paddingLeft: 2, listStyle: "none" }}>
+                  {exp.bullets.map((b, i) => (
+                    <li
+                      key={i}
+                      style={{
+                        fontSize: 13,
+                        color: modalTextSecondary,
+                        lineHeight: 1.65,
+                        marginBottom: 4,
+                        position: "relative",
+                        paddingLeft: 14,
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: 9,
+                          width: 4,
+                          height: 4,
+                          borderRadius: "50%",
+                          background: C.accent + "50",
+                        }}
+                      />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <SectionTitle>Projects</SectionTitle>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {resume.projects.map((proj, idx) => (
+              <div
+                key={idx}
+                style={{
+                  padding: "10px 14px",
+                  background: isLight ? `${C.accent}06` : `${C.accent}04`,
+                  borderRadius: 8,
+                  border: `1px solid ${C.border}`,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    marginBottom: 6,
+                  }}
+                >
+                  <span style={{ fontWeight: 700, fontSize: 14, color: C.textPrimary }}>
+                    {proj.name}
+                  </span>
+
+                  {proj.tag && (
+                    <span
+                      style={{
+                        fontFamily: mono,
+                        fontSize: 9,
+                        fontWeight: 700,
+                        padding: "2px 8px",
+                        borderRadius: 4,
+                        background: `${C.green}15`,
+                        color: C.green,
+                        border: `1px solid ${C.green}25`,
+                      }}
+                    >
+                      {proj.tag}
+                    </span>
+                  )}
+                </div>
+
+                <ul style={{ margin: 0, paddingLeft: 2, listStyle: "none" }}>
+                  {proj.bullets.map((b, i) => (
+                    <li
+                      key={i}
+                      style={{
+                        fontSize: 13,
+                        color: modalTextSecondary,
+                        lineHeight: 1.65,
+                        marginBottom: 3,
+                        position: "relative",
+                        paddingLeft: 14,
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: 9,
+                          width: 4,
+                          height: 4,
+                          borderRadius: "50%",
+                          background: C.accent + "50",
+                        }}
+                      />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Hero Section ─── */
 export function HeroSection({ onMenu, onHire, C }) {
   const [uptime, setUptime] = useState(0);
+  const [showResume, setShowResume] = useState(false);
   const width = useWindowWidth();
 
   const isMobile = width <= 767;
@@ -49,6 +600,16 @@ export function HeroSection({ onMenu, onHire, C }) {
   const isTightHero = width <= 1280;
   const isWide = width >= 1600;
   const isUltraWide = width >= 1920;
+  const isLight = C.bg === "#F6F2E8";
+
+  const heroTextSecondary = isLight ? "#5f584f" : C.textSecondary;
+  const heroTextDim = isLight ? "#746c62" : C.textDim;
+
+  const heroTopPadding = isMobile
+    ? "clamp(118px, 18vw, 150px)"
+    : isTablet
+    ? "clamp(98px, 10vw, 126px)"
+    : "clamp(82px, 7vw, 112px)";
 
   useEffect(() => {
     const s = Date.now();
@@ -56,23 +617,22 @@ export function HeroSection({ onMenu, onHire, C }) {
     return () => clearInterval(t);
   }, []);
 
-
   const socialLinks = [
     {
       label: "Email",
-      href: "mailto:elbaraaa@.arizona.edu",
-      icon: EmailIcon
+      href: "mailto:elbaraaa@arizona.edu",
+      icon: EmailIcon,
     },
     {
       label: "GitHub",
       href: "https://github.com/Elbaraaa",
-      icon: GitHubIcon
+      icon: GitHubIcon,
     },
     {
       label: "LinkedIn",
       href: "https://www.linkedin.com/in/elbaraa-abdalla-a0746728a/",
-      icon: LinkedInIcon
-    }
+      icon: LinkedInIcon,
+    },
   ];
 
   const heroContentWidth = isMobile
@@ -110,7 +670,7 @@ export function HeroSection({ onMenu, onHire, C }) {
         display: "flex",
         alignItems: "center",
         overflow: "hidden",
-        background: "transparent"
+        background: "transparent",
       }}
     >
       <div
@@ -125,7 +685,7 @@ export function HeroSection({ onMenu, onHire, C }) {
               linear-gradient(to bottom, rgba(255,255,255,0.10), rgba(255,255,255,0))
             `
               : `radial-gradient(ellipse 60% 50% at 35% 50%,rgba(124,111,255,0.06) 0%,transparent 70%)`,
-          pointerEvents: "none"
+          pointerEvents: "none",
         }}
       />
 
@@ -142,18 +702,18 @@ export function HeroSection({ onMenu, onHire, C }) {
               padding: "clamp(24px, 2vw, 34px) clamp(20px, 1.8vw, 30px)",
               width: "clamp(240px, 18vw, 320px)",
               borderRadius: "clamp(10px, 1vw, 16px)",
-              animation: "fadeUp 0.6s 1.4s both"
-            })
+              animation: "fadeUp 0.6s 1.4s both",
+            }),
           }}
         >
           <div
             style={{
               fontFamily: "monospace",
               fontSize: "clamp(11px, 0.75vw, 13px)",
-              color: C.textDim,
+              color: heroTextDim,
               textTransform: "uppercase",
               letterSpacing: "0.1em",
-              marginBottom: "clamp(12px, 1vw, 16px)"
+              marginBottom: "clamp(12px, 1vw, 16px)",
             }}
           >
             System
@@ -168,10 +728,10 @@ export function HeroSection({ onMenu, onHire, C }) {
                   justifyContent: "space-between",
                   marginBottom: "clamp(10px, 0.8vw, 14px)",
                   fontFamily: "monospace",
-                  fontSize: "clamp(12px, 0.9vw, 15px)"
+                  fontSize: "clamp(12px, 0.9vw, 15px)",
                 }}
               >
-                <span style={{ color: C.textDim }}>{row[0]}</span>
+                <span style={{ color: heroTextDim }}>{row[0]}</span>
                 <span style={{ color: row[2] }}>{row[1]}</span>
               </div>
             )
@@ -187,7 +747,7 @@ export function HeroSection({ onMenu, onHire, C }) {
               fontFamily: "monospace",
               fontSize: "clamp(11px, 0.8vw, 14px)",
               color: C.green,
-              marginBottom: "clamp(14px, 1vw, 18px)"
+              marginBottom: "clamp(14px, 1vw, 18px)",
             }}
           >
             <span
@@ -197,7 +757,7 @@ export function HeroSection({ onMenu, onHire, C }) {
                 borderRadius: "50%",
                 background: C.green,
                 display: "inline-block",
-                animation: "pulse 1.5s ease-in-out infinite"
+                animation: "pulse 1.5s ease-in-out infinite",
               }}
             />
             Summer 2026 open
@@ -214,11 +774,11 @@ export function HeroSection({ onMenu, onHire, C }) {
               fontFamily: "monospace",
               fontSize: "clamp(11px, 0.8vw, 14px)",
               cursor: "pointer",
-              fontWeight: 700
+              fontWeight: 700,
             }}
-            onClick={() => window.open("/Elbaraa_Abdalla_resume.pdf", "_blank")}
+            onClick={() => setShowResume(true)}
           >
-            📄 Download Resume
+            📄 View Resume
           </button>
         </div>
       )}
@@ -230,8 +790,8 @@ export function HeroSection({ onMenu, onHire, C }) {
           zIndex: 4,
           width: heroContentWidth,
           padding: heroPaddingX,
-          paddingTop: "clamp(40px, 4vw, 72px)",
-          boxSizing: "border-box"
+          paddingTop: heroTopPadding,
+          boxSizing: "border-box",
         }}
       >
         <div
@@ -244,9 +804,9 @@ export function HeroSection({ onMenu, onHire, C }) {
             borderRadius: 20,
             fontFamily: "monospace",
             fontSize: "clamp(11px, 0.8vw, 14px)",
-            color: C.textSecondary,
+            color: heroTextSecondary,
             marginBottom: "clamp(28px, 2vw, 36px)",
-            animation: "fadeUp 0.5s 0.2s both"
+            animation: "fadeUp 0.5s 0.2s both",
           }}
         >
           <span style={{ fontSize: "clamp(8px, 0.6vw, 10px)", color: C.accent }}>◆</span>
@@ -263,7 +823,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             lineHeight: 0.92,
             margin: "0 0 clamp(20px, 1.4vw, 28px)",
             letterSpacing: "-0.03em",
-            animation: "fadeUp 0.7s 0.4s both"
+            animation: "fadeUp 0.7s 0.4s both",
           }}
         >
           <span
@@ -271,7 +831,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             style={{
               display: "block",
               fontSize: heroNameSize,
-              background: `linear-gradient(135deg,${C.textPrimary},${C.accent})`
+              background: `linear-gradient(135deg,${C.textPrimary},${C.accent})`,
             }}
           >
             Elbaraa
@@ -281,7 +841,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             style={{
               display: "block",
               fontSize: heroNameSize,
-              background: `linear-gradient(135deg,${C.accent},${C.green})`
+              background: `linear-gradient(135deg,${C.accent},${C.green})`,
             }}
           >
             Abdalla.
@@ -295,7 +855,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             color: C.accent,
             marginBottom: "clamp(18px, 1.4vw, 24px)",
             minHeight: "clamp(22px, 2vw, 30px)",
-            animation: "fadeUp 0.5s 0.9s both"
+            animation: "fadeUp 0.5s 0.9s both",
           }}
         >
           <Typewriter text={`> ${personal.subTagline}`} delay={1000} />
@@ -303,12 +863,12 @@ export function HeroSection({ onMenu, onHire, C }) {
 
         <p
           style={{
-            color: C.textSecondary,
+            color: heroTextSecondary,
             fontSize: isMobile ? "clamp(15px, 4vw, 18px)" : "clamp(16px, 1.05vw, 20px)",
             lineHeight: 1.75,
             maxWidth: isMobile ? "100%" : "clamp(540px, 36vw, 720px)",
             marginBottom: "clamp(20px, 1.6vw, 28px)",
-            animation: "fadeUp 0.6s 1.1s both"
+            animation: "fadeUp 0.6s 1.1s both",
           }}
         >
           I build systems that close the gap between research and real-world impact.
@@ -321,7 +881,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             gap: "clamp(10px, 0.9vw, 14px)",
             flexWrap: "wrap",
             marginBottom: "clamp(24px, 1.8vw, 30px)",
-            animation: "fadeUp 0.6s 1.15s both"
+            animation: "fadeUp 0.6s 1.15s both",
           }}
         >
           {socialLinks.map((item) => {
@@ -342,11 +902,11 @@ export function HeroSection({ onMenu, onHire, C }) {
                   borderRadius: 999,
                   border: `1px solid ${C.border}`,
                   background: C.surface,
-                  color: C.textSecondary,
+                  color: heroTextSecondary,
                   textDecoration: "none",
                   fontFamily: "monospace",
                   fontSize: "clamp(12px, 0.85vw, 14px)",
-                  transition: "transform 0.2s ease, border-color 0.2s ease, color 0.2s ease"
+                  transition: "transform 0.2s ease, border-color 0.2s ease, color 0.2s ease",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-2px)";
@@ -356,7 +916,7 @@ export function HeroSection({ onMenu, onHire, C }) {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0)";
                   e.currentTarget.style.borderColor = C.border;
-                  e.currentTarget.style.color = C.textSecondary;
+                  e.currentTarget.style.color = heroTextSecondary;
                 }}
               >
                 <Icon size={16} color="currentColor" />
@@ -370,12 +930,12 @@ export function HeroSection({ onMenu, onHire, C }) {
           style={{
             fontFamily: "monospace",
             fontSize: "clamp(10px, 0.75vw, 13px)",
-            color: C.textDim,
+            color: heroTextDim,
             marginBottom: "clamp(24px, 1.8vw, 30px)",
             animation: "fadeUp 0.5s 3s both",
             display: "flex",
             alignItems: "center",
-            gap: 8
+            gap: 8,
           }}
         >
           <span style={{ color: C.accent, opacity: 0.5 }}>🔮</span>
@@ -391,7 +951,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             gap: "clamp(12px, 1vw, 18px)",
             marginBottom: "clamp(42px, 3vw, 60px)",
             animation: "fadeUp 0.5s 1.2s both",
-            flexWrap: "wrap"
+            flexWrap: "wrap",
           }}
         >
           <button
@@ -407,7 +967,7 @@ export function HeroSection({ onMenu, onHire, C }) {
               fontSize: "clamp(13px, 0.9vw, 16px)",
               borderRadius: "clamp(7px, 0.8vw, 10px)",
               border: "none",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             Explore Work ↓
@@ -421,19 +981,19 @@ export function HeroSection({ onMenu, onHire, C }) {
               gap: 8,
               padding: "clamp(13px, 1vw, 17px) clamp(28px, 2vw, 36px)",
               border: `1px solid ${C.border}`,
-              color: C.textSecondary,
+              color: heroTextSecondary,
               fontSize: "clamp(13px, 0.9vw, 16px)",
               borderRadius: "clamp(7px, 0.8vw, 10px)",
               background: "none",
               fontFamily: "monospace",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             ✉️ Hire Me
           </button>
 
           <button
-            onClick={() => window.open("/Elbaraa_Abdalla_resume.pdf", "_blank")}
+            onClick={() => setShowResume(true)}
             style={{
               display: isTightHero ? "inline-flex" : "none",
               alignItems: "center",
@@ -446,10 +1006,10 @@ export function HeroSection({ onMenu, onHire, C }) {
               fontFamily: "monospace",
               fontSize: "clamp(12px, 0.85vw, 15px)",
               cursor: "pointer",
-              fontWeight: 700
+              fontWeight: 700,
             }}
           >
-            📄 Resume
+            📄 View Resume
           </button>
         </div>
 
@@ -462,7 +1022,7 @@ export function HeroSection({ onMenu, onHire, C }) {
             borderRadius: "clamp(10px, 0.9vw, 14px)",
             overflow: "hidden",
             animation: "fadeUp 0.6s 1.5s both",
-            maxWidth: isMobile ? "100%" : "clamp(580px, 42vw, 760px)"
+            maxWidth: isMobile ? "100%" : "clamp(580px, 42vw, 760px)",
           }}
         >
           {stats.map((s, i) => (
@@ -478,7 +1038,7 @@ export function HeroSection({ onMenu, onHire, C }) {
                   : i < 3
                   ? `1px solid ${C.border}`
                   : "none",
-                borderBottom: isMobile && i < 2 ? `1px solid ${C.border}` : "none"
+                borderBottom: isMobile && i < 2 ? `1px solid ${C.border}` : "none",
               }}
             >
               <div
@@ -488,19 +1048,20 @@ export function HeroSection({ onMenu, onHire, C }) {
                   fontSize: "clamp(24px, 1.8vw, 32px)",
                   fontWeight: 800,
                   background: `linear-gradient(135deg,${C.textPrimary},${C.accent})`,
-                  marginBottom: 3
+                  marginBottom: 3,
                 }}
               >
                 {s.value}
               </div>
+
               <div
                 style={{
                   fontFamily: "monospace",
                   fontSize: "clamp(8px, 0.65vw, 11px)",
-                  color: C.textDim,
+                  color: heroTextDim,
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
-                  lineHeight: 1.3
+                  lineHeight: 1.3,
                 }}
               >
                 {s.label}
@@ -517,24 +1078,24 @@ export function HeroSection({ onMenu, onHire, C }) {
               flexDirection: "column",
               alignItems: "center",
               animation: "fadeUp 0.5s 2s both",
-              pointerEvents: "none"
+              pointerEvents: "none",
             }}
           >
             <div
               style={{
                 fontFamily: "monospace",
                 fontSize: "clamp(11px, 0.85vw, 14px)",
-                color: C.textDim,
-                marginBottom: 6
+                color: heroTextDim,
+                marginBottom: 6,
               }}
             >
               scroll to navigate
             </div>
             <div
               style={{
-                color: C.textDim,
+                color: heroTextDim,
                 fontSize: "clamp(16px, 1.2vw, 22px)",
-                animation: "bounce 1.6s ease-in-out infinite"
+                animation: "bounce 1.6s ease-in-out infinite",
               }}
             >
               ↓
@@ -555,30 +1116,32 @@ export function HeroSection({ onMenu, onHire, C }) {
             flexDirection: "column",
             alignItems: "center",
             animation: "fadeUp 0.5s 2s both",
-            pointerEvents: "none"
+            pointerEvents: "none",
           }}
         >
           <div
             style={{
               fontFamily: "monospace",
               fontSize: "clamp(11px, 0.85vw, 14px)",
-              color: C.textDim,
-              marginBottom: 6
+              color: heroTextDim,
+              marginBottom: 6,
             }}
           >
             scroll to navigate
           </div>
           <div
             style={{
-              color: C.textDim,
+              color: heroTextDim,
               fontSize: "clamp(16px, 1.2vw, 22px)",
-              animation: "bounce 1.6s ease-in-out infinite"
+              animation: "bounce 1.6s ease-in-out infinite",
             }}
           >
             ↓
           </div>
         </div>
       )}
+
+      {showResume && <ResumeViewer onClose={() => setShowResume(false)} C={C} />}
     </section>
   );
 }
