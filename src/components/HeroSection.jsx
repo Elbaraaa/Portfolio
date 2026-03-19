@@ -153,6 +153,7 @@ function DownloadIcon({ size = 16, color = "currentColor" }) {
 
 /* ─── Resume Viewer Modal (theme-aware) ─── */
 function ResumeViewer({ onClose, C }) {
+  const mobileTopGap = 72;
   const overlayRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const isLight = C.bg === "#F6F2E8";
@@ -211,10 +212,10 @@ function ResumeViewer({ onClose, C }) {
           backdropFilter: visible ? "blur(16px)" : "blur(0px)",
           WebkitBackdropFilter: visible ? "blur(16px)" : "blur(0px)",
           display: "flex",
-          alignItems: isMobile ? "flex-start" : "center",
           justifyContent: "center",
           transition: "all 0.3s ease",
-          padding: isMobile ? "8px" : "16px",
+          alignItems: isMobile ? "flex-start" : "center",
+          padding: isMobile ? `${mobileTopGap}px 8px 8px` : "16px",
           boxSizing: "border-box",
           overflow: "hidden",
         }}
