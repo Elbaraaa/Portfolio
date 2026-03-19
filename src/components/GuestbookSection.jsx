@@ -1,7 +1,55 @@
 import { useState, useEffect, useRef } from "react";
+import { db } from "../firebase";
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  serverTimestamp
+} from "firebase/firestore";
 import { mkPanel } from "../styles/theme";
 import { useInView } from "../hooks/useInView";
 import { SectionTag } from "./ui";
+
+/* ── security helpers ────────────────────────────────── */
+
+const sanitizeText = (str, maxLen) => {
+  if (typeof str !== "string") return "";
+  return str.replace(/[<>&"'`]/g, (ch) =>
+    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;", "`": "&#96;" })[ch]
+  ).slice(0, maxLen);
+};
+
+const isValidDataUrl = (val) => {
+  if (typeof val !== "string" || val === "data:,") return false;
+  return /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(val) && val.length < 200000;
+};
+
+const validateEntry = (raw, allowedColors) => {
+  if (!raw || typeof raw !== "object") return null;
+  if (typeof raw.name !== "string" || !raw.name.trim()) return null;
+
+  const ts = raw.ts?.toMillis ? raw.ts.toMillis() : typeof raw.ts === "number" ? raw.ts : 0;
+  if (ts <= 0) return null;
+
+  return {
+    name: sanitizeText(raw.name.trim(), 32),
+    msg: sanitizeText(typeof raw.msg === "string" ? raw.msg.trim() : "", 200),
+    sig: sanitizeText(typeof raw.sig === "string" ? raw.sig.trim() : "", 40),
+    draw: isValidDataUrl(raw.draw) ? raw.draw : null,
+    ts,
+    color: allowedColors.includes(raw.color) ? raw.color : allowedColors[0],
+    approved: raw.approved === true
+  };
+};
+
+const MAX_ENTRIES = 500;
+const SUBMIT_COOLDOWN_MS = 5000;
+const GUESTBOOK_COLLECTION = "guestbook";
+
+/* ── component ───────────────────────────────────────── */
 
 export function GuestbookSection({ C }) {
   const { ref, inView } = useInView(0.1);
@@ -26,28 +74,35 @@ export function GuestbookSection({ C }) {
   const modalCardRef = useRef(null);
   const isPainting = useRef(false);
   const lastPointRef = useRef(null);
+  const lastSubmitRef = useRef(0);
+
+  const allowedColors = [C.accent, C.green, C.pink, C.orange];
+
+  /* ── load entries from Firestore ───────────────────── */
 
   useEffect(() => {
     (async () => {
       try {
-        const r = await window.storage.list("guest:");
-        if (r?.keys) {
-          const items = await Promise.all(
-            r.keys.map(async (k) => {
-              try {
-                const v = await window.storage.get(k, true);
-                return v ? JSON.parse(v.value) : null;
-              } catch {
-                return null;
-              }
-            })
-          );
-          setSigs(items.filter(Boolean).sort((a, b) => b.ts - a.ts));
-        }
-      } catch {}
+        const q = query(
+          collection(db, GUESTBOOK_COLLECTION),
+          orderBy("ts", "desc"),
+          limit(MAX_ENTRIES)
+        );
+        const snapshot = await getDocs(q);
+        const items = [];
+        snapshot.forEach((doc) => {
+          const validated = validateEntry(doc.data(), allowedColors);
+          if (validated) items.push(validated);
+        });
+        setSigs(items);
+      } catch (err) {
+        console.error("Guestbook load error:", err);
+      }
       setLoading(false);
     })();
   }, []);
+
+  /* ── drawing helpers ───────────────────────────────── */
 
   const getPoint = (e, canvas) => {
     const rect = canvas.getBoundingClientRect();
@@ -100,6 +155,8 @@ export function GuestbookSection({ C }) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
+  /* ── signature modal ───────────────────────────────── */
+
   const openSignatureModal = () => {
     setDraftTypedSig(typedSig);
     setDraftTab(tab);
@@ -131,6 +188,11 @@ export function GuestbookSection({ C }) {
 
     if (draftTab === "draw" && modalCanvasRef.current && canvasRef.current) {
       const dataUrl = modalCanvasRef.current.toDataURL();
+      if (!isValidDataUrl(dataUrl)) {
+        setDrawPreview("");
+        closeSignatureModal();
+        return;
+      }
       const mainCtx = canvasRef.current.getContext("2d");
       mainCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
@@ -181,28 +243,38 @@ export function GuestbookSection({ C }) {
     };
   }, [sigModalOpen]);
 
+  /* ── submit to Firestore with rate limiting ────────── */
+
   const submit = async () => {
-    if (!name.trim() || submitting) return;
+    const trimmedName = name.trim();
+    if (!trimmedName || submitting) return;
+
+    const now = Date.now();
+    if (now - lastSubmitRef.current < SUBMIT_COOLDOWN_MS) return;
+    lastSubmitRef.current = now;
+
     setSubmitting(true);
 
-    const colors = [C.accent, C.green, C.pink, C.orange];
-    const drawData = tab === "draw" ? drawPreview : null;
+    const drawData = tab === "draw" && isValidDataUrl(drawPreview) ? drawPreview : null;
 
     const entry = {
-      name: name.trim(),
-      msg: msg.trim(),
-      sig: typedSig.trim(),
+      name: sanitizeText(trimmedName, 32),
+      msg: sanitizeText(msg.trim(), 200),
+      sig: sanitizeText(typedSig.trim(), 40),
       draw: drawData,
-      ts: Date.now(),
-      color: colors[Math.floor(Math.random() * 4)],
+      ts: serverTimestamp(),
+      color: allowedColors[Math.floor(Math.random() * allowedColors.length)],
       approved: false
     };
 
     try {
-      await window.storage.set("guest:" + entry.ts, JSON.stringify(entry), true);
-    } catch {}
+      await addDoc(collection(db, GUESTBOOK_COLLECTION), entry);
+    } catch (err) {
+      console.error("Guestbook submit error:", err);
+    }
 
-    setSigs((p) => [entry, ...p]);
+    const localEntry = { ...entry, ts: now };
+    setSigs((p) => [localEntry, ...p].slice(0, MAX_ENTRIES));
     setName("");
     setMsg("");
     setTypedSig("");
@@ -212,6 +284,8 @@ export function GuestbookSection({ C }) {
     setDone(true);
     setTimeout(() => setDone(false), 3000);
   };
+
+  /* ── styles ────────────────────────────────────────── */
 
   const inputStyle = {
     width: "100%",
@@ -225,6 +299,8 @@ export function GuestbookSection({ C }) {
     outline: "none",
     boxSizing: "border-box"
   };
+
+  /* ── render ────────────────────────────────────────── */
 
   return (
     <section
@@ -323,7 +399,7 @@ export function GuestbookSection({ C }) {
 
             <input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value.slice(0, 32))}
               placeholder="Your name *"
               maxLength={32}
               style={{ ...inputStyle, marginBottom: 10 }}
@@ -331,7 +407,7 @@ export function GuestbookSection({ C }) {
 
             <textarea
               value={msg}
-              onChange={(e) => setMsg(e.target.value)}
+              onChange={(e) => setMsg(e.target.value.slice(0, 200))}
               placeholder="Leave a message…"
               maxLength={200}
               rows={3}
@@ -544,6 +620,21 @@ export function GuestbookSection({ C }) {
                     {s.name}
                   </div>
 
+                  {s.approved && s.msg && (
+                    <div
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: "clamp(12px, 0.82vw, 14px)",
+                        color: C.textSecondary,
+                        marginBottom: 4,
+                        lineHeight: 1.5,
+                        wordBreak: "break-word"
+                      }}
+                    >
+                      {s.msg}
+                    </div>
+                  )}
+
                   {s.sig && (
                     <div
                       style={{
@@ -559,7 +650,7 @@ export function GuestbookSection({ C }) {
                     </div>
                   )}
 
-                  {s.draw && s.draw !== "data:," && (
+                  {s.draw && (
                     <img
                       src={s.draw}
                       style={{ width: "100%", height: 36, objectFit: "contain", opacity: 0.6, marginBottom: 6 }}
@@ -691,7 +782,7 @@ export function GuestbookSection({ C }) {
             {draftTab === "type" ? (
               <input
                 value={draftTypedSig}
-                onChange={(e) => setDraftTypedSig(e.target.value)}
+                onChange={(e) => setDraftTypedSig(e.target.value.slice(0, 40))}
                 placeholder="Type your signature…"
                 maxLength={40}
                 style={{
