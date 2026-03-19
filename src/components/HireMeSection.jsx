@@ -42,8 +42,8 @@ export function HireMeSection({ C }) {
 
   const reasons = [
     { icon: "🚀", text: "Shipped real production systems for a university" },
-    { icon: "🏆", text: "2x hackathon winner — AI & full-stack" },
-    { icon: "📐", text: "3.9 GPA + Dean's List while working two roles" },
+    { icon: "🏆", text: "Hackathon winner — AI & full-stack" },
+    { icon: "📐", text: "3.7 GPA + Dean's List while working three roles" },
     { icon: "🧠", text: "End-to-end ownership: design → deploy → maintain" }
   ];
 
