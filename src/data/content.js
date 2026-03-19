@@ -347,21 +347,21 @@ export const skillCategories = [
 export const achievements = [
   {
     icon: "🏆",
-    title: "First Place",
+    title: "Gemini Hackathon Winner",
     event: "Hack Arizona",
-    desc: "Won first place for MajorLyte, an AI-powered academic planning platform.",
-  },
-  {
-    icon: "✨",
-    title: "Best Use of Gemini API",
-    event: "Hack Arizona",
-    desc: "Recognized for using Gemini API to build a high-impact academic planning solution.",
+    desc: "Won First Place and Best Use of Gemini API for MajorLyte, an AI-powered academic planning platform.",
   },
   {
     icon: "🎓",
+    title: "Dean’s List ×4",
+    event: "University of Arizona",
+    desc: "Earned Dean’s List honors four times while balancing coursework, teaching, and campus roles.",
+  },
+  {
+    icon: "👨‍🏫",
     title: "Teaching Impact",
-    event: "UA CS Department",
-    desc: "Mentored 100+ students across Software Development and Object-Oriented Programming courses.",
+    event: "UA SALT Center",
+    desc: "Tutored and mentored 200+ students with learning and attention challenges, helping them build stronger academic skills and confidence.",
   },
   {
     icon: "🔎",
