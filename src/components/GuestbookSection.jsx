@@ -158,6 +158,8 @@ export function GuestbookSection({ C }) {
   /* ── signature modal ───────────────────────────────── */
 
   const openSignatureModal = () => {
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
     setDraftTypedSig(typedSig);
     setDraftTab(tab);
     setSigModalOpen(true);
@@ -178,6 +180,8 @@ export function GuestbookSection({ C }) {
   };
 
   const closeSignatureModal = () => {
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
     setSigModalOpen(false);
     endDraw();
   };
@@ -222,27 +226,34 @@ export function GuestbookSection({ C }) {
       if (e.key === "Escape") closeSignatureModal();
     };
 
-    let lastScrollY = window.scrollY;
-    const handleScrollClose = () => {
-      if (Math.abs(window.scrollY - lastScrollY) > 100) {
+    let touchStartPos = null;
+    const handleTouchStart = (e) => {
+      touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+    const handleTouchEnd = (e) => {
+      if (!touchStartPos) return;
+      const touch = e.changedTouches[0];
+      const moved = Math.abs(touch.clientX - touchStartPos.x) + Math.abs(touch.clientY - touchStartPos.y);
+      if (moved < 10 && modalCardRef.current && !modalCardRef.current.contains(e.target)) {
         closeSignatureModal();
       }
+      touchStartPos = null;
     };
 
     const timer = setTimeout(() => {
       window.addEventListener("mousedown", handleOutsideClick);
-      window.addEventListener("touchstart", handleOutsideClick, { passive: true });
+      window.addEventListener("touchstart", handleTouchStart, { passive: true });
+      window.addEventListener("touchend", handleTouchEnd, { passive: true });
     }, 0);
 
     window.addEventListener("keydown", handleEsc);
-    window.addEventListener("scroll", handleScrollClose, { passive: true });
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener("mousedown", handleOutsideClick);
-      window.removeEventListener("touchstart", handleOutsideClick);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("keydown", handleEsc);
-      window.removeEventListener("scroll", handleScrollClose);
     };
   }, [sigModalOpen]);
 
