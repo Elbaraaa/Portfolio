@@ -156,6 +156,7 @@ function ResumeViewer({ onClose, C }) {
   const overlayRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const isLight = C.bg === "#F6F2E8";
+  const isMobile = window.innerWidth <= 767;
 
   const modalTextSecondary = isLight ? "#5f584f" : C.textSecondary;
   const modalTextDim = isLight ? "#746c62" : C.textDim;
@@ -195,35 +196,39 @@ function ResumeViewer({ onClose, C }) {
   );
 
   return (
-    <div
-      ref={overlayRef}
-      onClick={(e) => e.target === overlayRef.current && handleClose()}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 1800,
-        background: visible
-          ? isLight
-            ? "rgba(255,255,255,0.6)"
-            : "rgba(0,0,0,0.78)"
-          : "rgba(0,0,0,0)",
-        backdropFilter: visible ? "blur(16px)" : "blur(0px)",
-        WebkitBackdropFilter: visible ? "blur(16px)" : "blur(0px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        transition: "all 0.3s ease",
-        padding: 16,
-      }}
-    >
+      <div
+        ref={overlayRef}
+        onClick={(e) => e.target === overlayRef.current && handleClose()}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 1800,
+          background: visible
+            ? isLight
+              ? "rgba(255,255,255,0.6)"
+              : "rgba(0,0,0,0.78)"
+            : "rgba(0,0,0,0)",
+          backdropFilter: visible ? "blur(16px)" : "blur(0px)",
+          WebkitBackdropFilter: visible ? "blur(16px)" : "blur(0px)",
+          display: "flex",
+          alignItems: isMobile ? "flex-start" : "center",
+          justifyContent: "center",
+          transition: "all 0.3s ease",
+          padding: isMobile ? "8px" : "16px",
+          boxSizing: "border-box",
+          overflow: "hidden",
+        }}
+      > 
       <div
         style={{
           width: "100%",
           maxWidth: 700,
-          maxHeight: "92vh",
+          height: window.innerWidth <= 767 ? "calc(100dvh - 16px)" : "auto",
+          maxHeight: window.innerWidth <= 767 ? "calc(100dvh - 16px)" : "92vh",
+          marginTop: window.innerWidth <= 767 ? "0" : undefined,
           background: C.surface,
           border: `1px solid ${C.border}`,
-          borderRadius: 14,
+          borderRadius: window.innerWidth <= 767 ? 10 : 14,
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
@@ -364,9 +369,12 @@ function ResumeViewer({ onClose, C }) {
         <div
           style={{
             overflowY: "auto",
-            padding: "24px 28px 30px",
+            flex: 1,
+            minHeight: 0,
+            padding: window.innerWidth <= 767 ? "18px 16px 24px" : "24px 28px 30px",
             color: C.textPrimary,
             background: C.surface,
+            WebkitOverflowScrolling: "touch",
           }}
         >
           <div style={{ textAlign: "center", marginBottom: 18 }}>
@@ -644,8 +652,9 @@ export function HeroSection({ onMenu, onHire, C }) {
   const [uptime, setUptime] = useState(0);
   const [showResume, setShowResume] = useState(false);
   const width = useWindowWidth();
+  const isMobile = window.innerWidth <= 767;
 
-  const isMobile = width <= 767;
+
   const isTablet = width <= 1024;
   const isLaptop = width <= 1280;
   const isTightHero = width <= 1280;
