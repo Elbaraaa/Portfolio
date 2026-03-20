@@ -41,7 +41,8 @@ const validateEntry = (raw, allowedColors) => {
     draw: isValidDataUrl(raw.draw) ? raw.draw : null,
     ts,
     color: allowedColors.includes(raw.color) ? raw.color : allowedColors[0],
-    approved: raw.approved === true
+    approved: raw.approved === true,
+    hidden: raw.hidden === true
   };
 };
 
@@ -278,7 +279,8 @@ export function GuestbookSection({ C }) {
       draw: drawData,
       ts: serverTimestamp(),
       color: allowedColors[Math.floor(Math.random() * allowedColors.length)],
-      approved: false
+      approved: false,
+      hidden: false
     };
 
     try {
@@ -582,7 +584,7 @@ export function GuestbookSection({ C }) {
                 marginBottom: "clamp(14px, 1vw, 18px)"
               }}
             >
-              {loading ? "Loading…" : `${sigs.length} visitor${sigs.length !== 1 ? "s" : ""} have signed`}
+              {loading ? "Loading…" : `${sigs.filter(s => !s.hidden).length} visitor${sigs.filter(s => !s.hidden).length !== 1 ? "s" : ""} have signed`}
             </div>
 
             {!loading && sigs.length === 0 && (
@@ -610,7 +612,7 @@ export function GuestbookSection({ C }) {
                 paddingRight: 4
               }}
             >
-              {sigs.map((s) => (
+              {sigs.filter((s) => !s.hidden).map((s) => (
                 <div
                   key={s.ts}
                   style={mkPanel(C, {
