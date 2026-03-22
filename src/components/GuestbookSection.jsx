@@ -17,9 +17,7 @@ import { SectionTag } from "./ui";
 
 const sanitizeText = (str, maxLen) => {
   if (typeof str !== "string") return "";
-  return str.replace(/[<>&"'`]/g, (ch) =>
-    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;", "`": "&#96;" })[ch]
-  ).slice(0, maxLen);
+  return str.slice(0, maxLen);
 };
 
 const isValidDataUrl = (val) => {
