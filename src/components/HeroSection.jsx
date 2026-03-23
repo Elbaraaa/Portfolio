@@ -501,18 +501,6 @@ function ResumeViewer({ onClose, C }) {
               <span style={{ fontSize: 13, color: modalTextSecondary }}>
                 {resume.education.degree}
               </span>
-              {resume.education.honors && (
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: C.green,
-                    fontFamily: mono,
-                    marginTop: 4,
-                  }}
-                >
-                  {resume.education.honors}
-                </div>
-              )}
               <span
                 style={{
                   fontFamily: mono,
@@ -528,6 +516,18 @@ function ResumeViewer({ onClose, C }) {
                 {resume.education.gpa}
               </span>
             </div>
+            {resume.education.honors && (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: C.green,
+                  fontFamily: mono,
+                  marginTop: 6,
+                }}
+              >
+                {resume.education.honors}
+              </div>
+            )}
           </div>
 
           <SectionTitle>Technical Skills</SectionTitle>
