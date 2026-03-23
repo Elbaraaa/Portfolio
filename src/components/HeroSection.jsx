@@ -67,6 +67,8 @@ const resume = {
     date: "August 2022 – May 2026",
     degree: "Bachelor of Science in Computer Science",
     gpa: "GPA: 3.7",
+    honors: "Hackathon Winner (1st Place, Best Use of Google Gemini API) · Dean’s List x4",
+
   },
   skills: [
     { cat: "Languages", items: "Java, Python, C/C++, JavaScript, SQL, C#, MIPS" },
@@ -499,6 +501,18 @@ function ResumeViewer({ onClose, C }) {
               <span style={{ fontSize: 13, color: modalTextSecondary }}>
                 {resume.education.degree}
               </span>
+              {resume.education.honors && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: C.green,
+                    fontFamily: mono,
+                    marginTop: 4,
+                  }}
+                >
+                  {resume.education.honors}
+                </div>
+              )}
               <span
                 style={{
                   fontFamily: mono,
