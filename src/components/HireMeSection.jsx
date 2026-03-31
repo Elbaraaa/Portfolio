@@ -22,7 +22,8 @@ export function HireMeSection({ C }) {
 
     try {
       const FormspreeId = process.env.REACT_APP_FORMSPREE_ID;
-      console.log("FORMSPREE ID:", process.env.REACT_APP_FORMSPREE_ID);
+      console.log("FORMSPREE ID:", FormspreeId);
+      console.log("Has key?", !!FormspreeId);
       const res = await fetch(`https://formspree.io/f/${FormspreeId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
