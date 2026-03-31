@@ -24,12 +24,24 @@ export default async function handler(req, res) {
 
     const chat = model.startChat({ history: cleanHistory });
     const result = await chat.sendMessage(message);
-    const text = result.response.text();
+
+    if (!result || !result.response) {
+      throw new Error("Invalid Gemini response");
+    }
+
+    const text = result.response.text ? result.response.text() : null;
+
+    if (!text) {
+      throw new Error("No text returned from Gemini");
+    }
 
     res.status(200).json({ reply: text });
 
   } catch (error) {
-    console.error("API Error:", error.message);
-    res.status(500).json({ error: error.message });
-  }
+      console.error("FULL ERROR:", error);
+      res.status(500).json({
+        error: error.message,
+        stack: error.stack
+      });
+    }
 }
